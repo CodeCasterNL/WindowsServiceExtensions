@@ -10,6 +10,11 @@ namespace CodeCaster.WindowsServiceExtensions
     {
         public static IHostBuilder UsePowerEventAwareWindowsService(this IHostBuilder builder)
         {
+            if (!WindowsServiceHelpers.IsWindowsService())
+            {
+                return builder;
+            }
+
             // Call MS's one
             builder.UseWindowsService();
 
