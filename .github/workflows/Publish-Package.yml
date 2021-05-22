@@ -39,3 +39,7 @@ jobs:
       with:
           fail_on_unmatched_files: true
           files: '**/*.nupkg'
+
+    - name: Release to NuGet.org
+      if: startsWith(github.ref, 'refs/tags/')
+      run: nuget push **\*.nupkg -Source 'https://api.nuget.org/v3/index.json' -ApiKey ${{secrets.NUGET_API_KEY}}
