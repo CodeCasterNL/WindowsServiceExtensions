@@ -16,19 +16,7 @@ jobs:
     - name: Get version info from Git
       id: git_version
       uses: battila7/get-version-action@v2
-
-    - name: Echo git_version
-      run: |
-        echo ${{ steps.git_version.outputs }}
-        echo ${{ steps.git_version.outputs.version }}
-        echo ${{ steps.git_version.outputs.version-without-v }}
-        echo ${{ steps.git_version.outputs.is-semver }}
-        echo ${{ steps.git_version.outputs.major }}
-        echo ${{ steps.git_version.outputs.minor }}
-        echo ${{ steps.git_version.outputs.patch }}
-        echo ${{ steps.git_version.outputs.prerelease }}
-        echo ${{ steps.git_version.outputs.build }}
-
+      
     - name: Setup .NET
       uses: actions/setup-dotnet@v1
       with:
@@ -49,4 +37,5 @@ jobs:
       env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-          files: bin/Release/CodeCaster.WindowsServiceExtensions.${{ steps.git_version.outputs.version-without-v }}.nupkg
+          fail_on_unmatched_files: true
+          files: '**/*.nupkg'
