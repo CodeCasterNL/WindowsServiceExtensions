@@ -1,0 +1,52 @@
+name: Build and publish .NET Core package
+
+on:
+  release:
+    types: 
+    - created
+  
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Get version info from Git
+      id: git_version
+      uses: battila7/get-version-action@v2
+
+    - name: Echo git_version
+      run: |
+        echo ${{ steps.git_version.outputs }}
+        echo ${{ steps.git_version.outputs.version }}
+        echo ${{ steps.git_version.outputs.version-without-v }}
+        echo ${{ steps.git_version.outputs.is-semver }}
+        echo ${{ steps.git_version.outputs.major }}
+        echo ${{ steps.git_version.outputs.minor }}
+        echo ${{ steps.git_version.outputs.patch }}
+        echo ${{ steps.git_version.outputs.prerelease }}
+        echo ${{ steps.git_version.outputs.build }}
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 5.0.x
+
+    - name: Restore dependencies
+      run: dotnet restore
+
+    - name: Build
+      run: dotnet build --no-restore --configuration=Release -p:Version=${{ steps.git_version.outputs.version-without-v }}
+
+#    - name: Test
+#      run: dotnet test --no-build --verbosity normal
+
+    - name: Release to GitHub
+      uses: softprops/action-gh-release@v1
+      if: startsWith(github.ref, 'refs/tags/')
+      env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+          files: bin/Release/CodeCaster.WindowsServiceExtensions.${{ steps.git_version.outputs.version-without-v }}.nupkg
