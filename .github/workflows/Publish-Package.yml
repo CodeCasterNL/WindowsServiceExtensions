@@ -6,7 +6,7 @@ on:
     - created
   
 jobs:
-  build:
+  Publish:
     runs-on: ubuntu-latest
 
     steps:
@@ -27,19 +27,16 @@ jobs:
 
     - name: Build
       run: dotnet build --no-restore --configuration=Release -p:Version=${{ steps.git_version.outputs.version-without-v }}
-
-#    - name: Test
-#      run: dotnet test --no-build --verbosity normal
-
+  
     - name: Release to GitHub
       uses: softprops/action-gh-release@v1
       if: startsWith(github.ref, 'refs/tags/')
       env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-          fail_on_unmatched_files: true
+          fail_on_unmatched_files: true # needs action-gh-release@v2 but that doesn't exist yet, gives a warning now
           files: '**/*.nupkg'
 
     - name: Release to NuGet.org
       if: startsWith(github.ref, 'refs/tags/')
-      run: nuget push **/*.nupkg -Source 'https://api.nuget.org/v3/index.json' -ApiKey ${{secrets.NUGET_API_KEY}}
+      run: nuget push **/*.nupkg -Source 'https://api.nuget.org/v3/index.json' -ApiKey ${{secrets.NUGET_API_KEY}} -NoSymbols
