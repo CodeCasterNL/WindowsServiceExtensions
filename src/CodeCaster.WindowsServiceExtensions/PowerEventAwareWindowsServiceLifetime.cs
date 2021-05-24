@@ -12,6 +12,9 @@ using Microsoft.Extensions.Options;
 
 namespace CodeCaster.WindowsServiceExtensions
 {
+    /// <summary>
+    /// Basically the same as <see cref="WindowsServiceLifetime"/>, but responds to 
+    /// </summary>
     public class PowerEventAwareWindowsServiceLifetime : WindowsServiceLifetime, IHostLifetime
     {
         private readonly CancellationTokenSource _starting = new();

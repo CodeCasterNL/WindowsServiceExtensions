@@ -6,19 +6,40 @@ using System.Linq;
 
 namespace CodeCaster.WindowsServiceExtensions
 {
+    /// <summary>
+    /// Extension method for setting up <see cref="PowerEventAwareWindowsServiceLifetime"/>.
+    /// </summary>
     public static class WindowsServiceLifetimeHostBuilderExtensionsAdapter
     {
-        public static IHostBuilder UsePowerEventAwareWindowsService(this IHostBuilder builder)
+        /// <summary>
+        /// Sets the host lifetime to <see cref="PowerEventAwareWindowsServiceLifetime"/> and does whatever <see cref="WindowsServiceLifetimeHostBuilderExtensions.UseWindowsService(Microsoft.Extensions.Hosting.IHostBuilder)"/> does.
+        /// </summary>
+        /// <param name="hostBuilder">The Microsoft.Extensions.Hosting.IHostBuilder to operate on.</param>
+        /// <returns>The same instance of the Microsoft.Extensions.Hosting.IHostBuilder for chaining.</returns>
+        /// <remarks>This is context aware and will only activate if it detects the process is running as a Windows Service.</remarks>
+        public static IHostBuilder UsePowerEventAwareWindowsService(this IHostBuilder hostBuilder)
+        {
+            return UsePowerEventAwareWindowsService(hostBuilder, _ => { });
+        }
+
+        /// <summary>
+        /// Sets the host lifetime to <see cref="PowerEventAwareWindowsServiceLifetime"/> and does whatever <see cref="WindowsServiceLifetimeHostBuilderExtensions.UseWindowsService(Microsoft.Extensions.Hosting.IHostBuilder)"/> does.
+        /// </summary>
+        /// <param name="hostBuilder">The Microsoft.Extensions.Hosting.IHostBuilder to operate on.</param>
+        /// <param name="configure">An action to configure the lifetime's options.</param>
+        /// <returns>The same instance of the Microsoft.Extensions.Hosting.IHostBuilder for chaining.</returns>
+        /// <remarks>This is context aware and will only activate if it detects the process is running as a Windows Service.</remarks>
+        public static IHostBuilder UsePowerEventAwareWindowsService(this IHostBuilder hostBuilder, Action<WindowsServiceLifetimeOptions> configure)
         {
             if (!WindowsServiceHelpers.IsWindowsService())
             {
-                return builder;
+                return hostBuilder;
             }
 
             // Call MS's one
-            builder.UseWindowsService();
+            hostBuilder.UseWindowsService(configure);
 
-            return builder.ConfigureServices(services =>
+            return hostBuilder.ConfigureServices(services =>
             {
                 // Replace UseWindowsService()'s IHostLifetime lifetime with our own
                 var lifetime = services.FirstOrDefault(s => s.ImplementationType == typeof(WindowsServiceLifetime));
