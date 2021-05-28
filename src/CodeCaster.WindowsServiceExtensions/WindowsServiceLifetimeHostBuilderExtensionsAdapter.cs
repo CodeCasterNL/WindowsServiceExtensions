@@ -12,7 +12,7 @@ namespace CodeCaster.WindowsServiceExtensions
     public static class WindowsServiceLifetimeHostBuilderExtensionsAdapter
     {
         /// <summary>
-        /// Sets the host lifetime to <see cref="PowerEventAwareWindowsServiceLifetime"/> and does whatever <see cref="WindowsServiceLifetimeHostBuilderExtensions.UseWindowsService(Microsoft.Extensions.Hosting.IHostBuilder)"/> does.
+        /// Sets the host lifetime to <see cref="PowerEventAwareWindowsServiceLifetime"/> and does whatever <see cref="WindowsServiceLifetimeHostBuilderExtensions.UseWindowsService(IHostBuilder)"/> does.
         /// </summary>
         /// <param name="hostBuilder">The Microsoft.Extensions.Hosting.IHostBuilder to operate on.</param>
         /// <returns>The same instance of the Microsoft.Extensions.Hosting.IHostBuilder for chaining.</returns>
@@ -23,7 +23,7 @@ namespace CodeCaster.WindowsServiceExtensions
         }
 
         /// <summary>
-        /// Sets the host lifetime to <see cref="PowerEventAwareWindowsServiceLifetime"/> and does whatever <see cref="WindowsServiceLifetimeHostBuilderExtensions.UseWindowsService(Microsoft.Extensions.Hosting.IHostBuilder)"/> does.
+        /// Sets the host lifetime to <see cref="PowerEventAwareWindowsServiceLifetime"/> and does whatever <see cref="WindowsServiceLifetimeHostBuilderExtensions.UseWindowsService(IHostBuilder)"/> does.
         /// </summary>
         /// <param name="hostBuilder">The Microsoft.Extensions.Hosting.IHostBuilder to operate on.</param>
         /// <param name="configure">An action to configure the lifetime's options.</param>

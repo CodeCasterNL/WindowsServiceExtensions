@@ -3,8 +3,14 @@ using Microsoft.Extensions.Hosting;
 
 namespace CodeCaster.WindowsServiceExtensions
 {
+    /// <summary>
+    /// An <see cref="IHostedService"/> that runs as a Windows Service that can react to power state changes.
+    /// </summary>
     public interface IPowerEventAwareHostedService : IHostedService
     {
-        bool OnPowerEvent(PowerBroadcastStatus powerStatus);
+        /// <summary>
+        /// Called when a power event is sent by the OS.
+        /// </summary>
+        void OnPowerEvent(PowerBroadcastStatus powerStatus);
     }
 }
