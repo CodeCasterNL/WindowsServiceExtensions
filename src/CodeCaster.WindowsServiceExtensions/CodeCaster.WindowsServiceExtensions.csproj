@@ -3,30 +3,25 @@
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
     <Nullable>enable</Nullable>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <PackageProjectUrl>https://github.com/CodeCasterNL/WindowsServiceExtensions</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/CodeCasterNL/WindowsServiceExtensions</RepositoryUrl>
-    <RepositoryType>GitHub</RepositoryType>
-    <PackageTags></PackageTags>
-    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
-    <PackageLicenseFile>LICENSE</PackageLicenseFile>
-    <Authors>CodeCaster</Authors>
-    <Company />
-    <Copyright>CodeCaster</Copyright>
-    <Description>Makes your .NET 5 BackgroundServices power-event-aware.</Description>
     <Version>2.0.0</Version>
+    <PackageId>CodeCaster.WindowsServiceExtensions</PackageId>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageTags>Windows Service;Power event;IHostedService;BackgroundService;</PackageTags>
+
+    <RepositoryUrl>https://github.com/CodeCasterNL/WindowsServiceExtensions</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+
+    <Authors>CodeCaster</Authors>
+    <Company>CodeCaster</Company>
+    <Copyright>© 2021 CodeCaster</Copyright>
+    <Description>Makes your .NET 5 BackgroundServices power-event-aware.</Description>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="5.0.0" />
     <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="5.0.1" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="..\..\LICENSE">
-      <Pack>True</Pack>
-      <PackagePath></PackagePath>
-    </None>
   </ItemGroup>
 
 </Project>
