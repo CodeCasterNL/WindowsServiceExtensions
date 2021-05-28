@@ -12,6 +12,9 @@ using Microsoft.Extensions.Options;
 
 namespace CodeCaster.WindowsServiceExtensions
 {
+    /// <summary>
+    /// Basically the same as <see cref="WindowsServiceLifetime"/>, but states it can handle power events, and forwards those to the IHostedServices that claim to be capable of the same.
+    /// </summary>
     public class PowerEventAwareWindowsServiceLifetime : WindowsServiceLifetime, IHostLifetime
     {
         private readonly CancellationTokenSource _starting = new();
@@ -64,6 +67,7 @@ namespace CodeCaster.WindowsServiceExtensions
             }
         }
 
+        /// <inheritdoc />
         protected override bool OnPowerEvent(PowerBroadcastStatus powerStatus)
         {
             _logger.LogInformation($"Windows Service power event: {powerStatus}");
@@ -74,18 +78,14 @@ namespace CodeCaster.WindowsServiceExtensions
                 return true;
             }
 
-            var acceptEvent = true;
-
+            // Forward the event to all registered I(PowerEventAware)HostedServices.
             foreach (var service in _hostedServices)
             {
-                if (!service.OnPowerEvent(powerStatus))
-                {
-                    // If any of the hosted services returns false, we deny the power status change request by returning false from this method (does that even work?)
-                    acceptEvent = false;
-                }
+                service.OnPowerEvent(powerStatus);
             }
 
-            return acceptEvent;
+            // Ignored anyway.
+            return true;
         }
 
         protected override void OnStart(string[] args)
@@ -101,6 +101,7 @@ namespace CodeCaster.WindowsServiceExtensions
             if (!_applicationLifetime.ApplicationStarted.IsCancellationRequested)
             {
                 // Usually very early in the startup process, so this may not be logged nor reported at all.
+                // But it's here to prevent the service from happily reporting successful startup, while the .NET Core ApplicationHost isn't started at all.
                 const string errorString = "Windows Service failed to start";
                 _logger.LogError(errorString);
                 throw new Exception(errorString);
