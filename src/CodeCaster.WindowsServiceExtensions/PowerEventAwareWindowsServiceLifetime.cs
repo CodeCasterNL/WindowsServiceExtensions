@@ -113,6 +113,7 @@ namespace CodeCaster.WindowsServiceExtensions
             base.OnStart(args);
         }
 
+        /// <inheritdoc />
         protected override void Dispose(bool disposing)
         {
             if (disposing)
