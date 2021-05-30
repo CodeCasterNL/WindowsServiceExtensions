@@ -35,8 +35,10 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
           fail_on_unmatched_files: true # needs action-gh-release@v2 but that doesn't exist yet, gives a warning now
-          files: '**/*.nupkg'
+          files: |
+            '**/*.nupkg'
+            '**/*.snupkg'
 
     - name: Release to NuGet.org
       if: startsWith(github.ref, 'refs/tags/')
-      run: nuget push **/*.nupkg -Source 'https://api.nuget.org/v3/index.json' -ApiKey ${{secrets.NUGET_API_KEY}} -NoSymbols
+      run: nuget push **/*.nupkg -Source 'https://api.nuget.org/v3/index.json' -ApiKey ${{secrets.NUGET_API_KEY}}
