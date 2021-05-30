@@ -25,6 +25,7 @@ namespace CodeCaster.WindowsServiceExtensions
         private readonly IHostApplicationLifetime _applicationLifetime;
         private IReadOnlyCollection<IPowerEventAwareHostedService>? _hostedServices;
 
+        /// <inheritdoc />
         public PowerEventAwareWindowsServiceLifetime(IServiceProvider serviceProvider, IHostEnvironment environment, IHostApplicationLifetime applicationLifetime, ILoggerFactory loggerFactory, IOptions<HostOptions> optionsAccessor)
             : base(environment, applicationLifetime, loggerFactory, optionsAccessor)
         {
@@ -38,6 +39,7 @@ namespace CodeCaster.WindowsServiceExtensions
             }
         }
 
+        /// <inheritdoc />
         public new async Task WaitForStartAsync(CancellationToken cancellationToken)
         {
             _logger.LogInformation("Windows Service start requested");
@@ -88,6 +90,7 @@ namespace CodeCaster.WindowsServiceExtensions
             return true;
         }
 
+        /// <inheritdoc />
         protected override void OnStart(string[] args)
         {
             _logger.LogInformation("Windows Service OnStart() was called");
