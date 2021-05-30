@@ -36,8 +36,8 @@ jobs:
       with:
           fail_on_unmatched_files: true # needs action-gh-release@v2 but that doesn't exist yet, gives a warning now
           files: |
-            '**/*.nupkg'
-            '**/*.snupkg'
+            **/*.nupkg
+            **/*.snupkg
 
     - name: Release to NuGet.org
       if: startsWith(github.ref, 'refs/tags/')
