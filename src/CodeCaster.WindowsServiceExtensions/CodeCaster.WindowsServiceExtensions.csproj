@@ -3,13 +3,16 @@
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
     <Nullable>enable</Nullable>
+    
     <Version>2.0.1</Version>
     <PackageId>CodeCaster.WindowsServiceExtensions</PackageId>
+    <PackageTags>Windows Service;Power event;IHostedService;BackgroundService;</PackageTags>
+
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-    <PackageTags>Windows Service;Power event;IHostedService;BackgroundService;</PackageTags>
-
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    
     <RepositoryUrl>https://github.com/CodeCasterNL/WindowsServiceExtensions</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
