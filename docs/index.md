@@ -101,4 +101,4 @@ When the task returns, the host stays up. This might be a problem if you start m
 
 ## Docs demo
 
-[See docs demo](/demo.html)
+[See docs demo](WindowsServiceExtensions/demo)
