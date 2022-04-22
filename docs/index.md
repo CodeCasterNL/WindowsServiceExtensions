@@ -1,37 +1,104 @@
-## Welcome to GitHub Pages
+﻿# WindowsServiceExtensions
+This package is relevant to developers who want to write reliable background tasks running under a Windows Service.
 
-You can use the [editor on GitHub](https://github.com/CodeCasterNL/WindowsServiceExtensions/edit/develop/docs/index.md) to maintain and preview the content for your website in Markdown files.
+## Installation
+Through [NuGet](https://www.nuget.org/packages/CodeCaster.WindowsServiceExtensions/):
 
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
+    > Install-Package CodeCaster.WindowsServiceExtensions
 
-### Markdown
+## Why should you use this?
+A usual Windows Service program might look like this:
 
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
+```C#
+var hostBuilder = new HostBuilder()
+    .ConfigureLogging(l => l.AddConsole())
+    .ConfigureServices((s) =>
+    {
+        // Add our IHostedService
+        s.AddHostedService<MyCoolBackgroundService>();
+    })
+    .UseWindowsService();
 
-```markdown
-Syntax highlighted code block
+var host = hostBuilder.Build;
 
-# Header 1
-## Header 2
-### Header 3
-
-- Bulleted
-- List
-
-1. Numbered
-2. List
-
-**Bold** and _Italic_ and `Code` text
-
-[Link](url) and ![Image](src)
+await host.RunAsync();
 ```
 
-For more details see [Basic writing and formatting syntax](https://docs.github.com/en/github/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax).
+And then your service would look like this:
 
-### Jekyll Themes
+```C#
+public class MyCoolBackgroundService : BackgroundService
+{
+    protected override Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        // Do your continuous or periodic background work.
+        await SomeLongRunningTaskAsync();
+    }
+}
+```
 
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/CodeCasterNL/WindowsServiceExtensions/settings/pages). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
+As long as your `ExecuteAsync()` runs, you have a _.NET_ (not Widows!) background service (`IHostedService`) running. When a hosted service throws an exception, that will stop the .NET Host that runs your application, and an event will be logged (as long as it exists and/or permisions are adequate).
 
-### Support or Contact
+## Lifetime
+TODO: explain.
 
-Having trouble with Pages? Check out our [documentation](https://docs.github.com/categories/github-pages-basics/) or [contact support](https://support.github.com/contact) and we’ll help you sort it out.
+## Host Builder (dependency injection)
+On your Host Builder, call `UsePowerEventAwareWindowsService()`:
+
+```C#
+using CodeCaster.WindowsServiceExtensions;
+
+// ...
+
+var hostBuilder = new HostBuilder()
+    .ConfigureLogging(l => l.AddConsole())
+    .ConfigureServices((s) =>
+    {
+        // Add our IHostedService
+        s.AddHostedService<MyCoolBackgroundService>();
+    })
+    // instead of .UseWindowsService():    
+    .UsePowerEventAwareWindowsService();
+```
+
+## Power events
+If you let your service inherit `PowerEventAwareBackgroundService` instead of [`Microsoft.Extensions.Hosting.BackgroundService`](https://docs.microsoft.com/en-us/dotnet/api/microsoft.extensions.hosting.backgroundservice?view=dotnet-plat-ext-5.0) (the former inherits the latter), you get a new method:
+
+public class MyCoolBackgroundService : PowerEventAwareBackgroundService
+{
+    // This still runs your long-running background job
+    protected override Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        // Do your continuous or periodic background work.
+        await SomeLongRunningTaskAsync();
+    }
+
+    // This one tells you when we're shutting down or resuming from semi-hibernation
+    public override void OnPowerEvent(PowerBroadcastStatus powerStatus)
+    {
+        _logger.LogDebug("OnPowerEvent: {powerStatus}", powerStatus);
+
+        if (powerStatus == PowerBroadcastStatus.Suspend)
+        {
+            _thingYoureRunning.Suspend();
+        }
+
+        if (powerStatus.In(PowerBroadcastStatus.ResumeSuspend, PowerBroadcastStatus.ResumeAutomatic))
+        {
+            _thingYoureRunning.Resume();
+        }
+    }
+}
+
+You might receive multiple `OnPowerEvent()` calls in succession, be sure to lock and/or debounce where appropriate.
+
+TODO: we can do that.
+
+Do note that the statuses received can vary. You get either `ResumeSuspend`, `ResumeAutomatic` or both, never neither, after a machine wake, reboot or boot.
+
+## TODO
+When the task returns, the host stays up. This might be a problem if you start multiple background services that should shut down the application when the last one has done its work.
+
+## Docs demo
+
+[See docs demo](/demo.html)
