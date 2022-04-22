@@ -33,7 +33,7 @@ namespace CodeCaster.WindowsServiceExtensions
         /// </summary>
         protected override Task ConfigureLifetimeAsync()
         {
-            _hostedServices = _serviceProvider.GetService<IEnumerable<IHostedService>>()?
+            _hostedServices = ServiceProvider.GetService<IEnumerable<IHostedService>>()?
                                               .OfType<IPowerEventAwareHostedService>()
                                               .ToList()
                               ?? new List<IPowerEventAwareHostedService>(0);

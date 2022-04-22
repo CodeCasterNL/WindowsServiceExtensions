@@ -10,7 +10,7 @@ using Microsoft.Extensions.Options;
 namespace CodeCaster.WindowsServiceExtensions
 {
     /// <summary>
-    /// 
+    /// Properly reports an error when DI of a background service fails, instead of having a service running zero hosted tasks.
     /// </summary>
     public class HostApplicationStartupLifetime : WindowsServiceLifetime, IHostLifetime
     {
@@ -41,7 +41,6 @@ namespace CodeCaster.WindowsServiceExtensions
             ServiceProvider = serviceProvider;
         }
 
-
         /// <inheritdoc />
         public new async Task WaitForStartAsync(CancellationToken cancellationToken)
         {
@@ -55,6 +54,7 @@ namespace CodeCaster.WindowsServiceExtensions
                 // Fail service start when an exception occurs during startup, and wait until OnStart() has been called before reporting success
                 // From https://github.com/dotnet/extensions/issues/2831#issuecomment-678658133
                 using var cts = CancellationTokenSource.CreateLinkedTokenSource(_starting.Token, cancellationToken);
+
                 await base.WaitForStartAsync(cts.Token);
             }
             catch (OperationCanceledException) when (_starting.IsCancellationRequested)
@@ -81,16 +81,19 @@ namespace CodeCaster.WindowsServiceExtensions
             // Flag that OnStart has been called.
             _starting.Cancel();
 
-            // Make sure the application host actually started successfully.
+            // Make sure the application host actually started successfully, or throw when the host is shut down while we start.
             _started.Wait(ApplicationLifetime.ApplicationStopping);
 
+            // This can happen very early in the startup process (even before ApplicationStopping is cancelled), so this may not be logged nor reported at all,
+            // because the DI isn't complete and the logger (file, event log, ...) not available while we're being disposed.
             if (!ApplicationLifetime.ApplicationStarted.IsCancellationRequested)
             {
-                // Usually very early in the startup process, so this may not be logged nor reported at all.
-                // But it's here to prevent the service from happily reporting successful startup, while the .NET Core ApplicationHost isn't started at all.
-                const string errorString = "Windows Service failed to start";
+                const string errorString = "Windows Service failed to start: some part reported it started, the other didn't";
+                
                 Logger.LogError(errorString);
-                throw new Exception(errorString);
+
+                // Prevent the service from happily reporting successful startup, while the .NET Core ApplicationHost isn't started at all.
+                throw new InvalidOperationException(errorString);
             }
 
             base.OnStart(args);
