@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
+// ReSharper disable MemberCanBePrivate.Global - public API
 namespace CodeCaster.WindowsServiceExtensions
 {
     /// <summary>
@@ -11,14 +12,21 @@ namespace CodeCaster.WindowsServiceExtensions
     /// </summary>
     public abstract class HostTerminatingBackgroundService : BackgroundService
     {
-        private readonly ILogger<HostTerminatingBackgroundService> _logger;
-        private readonly IHostApplicationLifetime _applicationLifetime;
+        /// <summary>
+        /// Logs.
+        /// </summary>
+        protected readonly ILogger<HostTerminatingBackgroundService> Logger;
+
+        /// <summary>
+        /// To ask nicely to stop the host when cancellation is requested. We're just a BackgroundService, returning from ExecuteAsync() won't stop the host application. Better us than Windows.
+        /// </summary>
+        protected readonly IHostApplicationLifetime ApplicationLifetime;
 
         /// <inheritdoc/>
         protected HostTerminatingBackgroundService(ILogger<HostTerminatingBackgroundService> logger, IHostApplicationLifetime applicationLifetime)
         {
-            _logger = logger;
-            _applicationLifetime = applicationLifetime;
+            Logger = logger;
+            ApplicationLifetime = applicationLifetime;
         }
 
         /// <inheritdoc />
@@ -32,13 +40,13 @@ namespace CodeCaster.WindowsServiceExtensions
             {
                 var errorString = $"Unhandled exception in {GetType().FullName}.ExecuteAsync()";
 
-                _logger.LogError(e, errorString);
+                Logger.LogError(e, errorString);
 
                 // .NET 6+ terminates the host on exception, 5 doesn't. Do it ourselves.
                 // https://docs.microsoft.com/en-us/dotnet/core/compatibility/core-libraries/6.0/hosting-exception-handling
                 Environment.ExitCode = -1;
 
-                _applicationLifetime.StopApplication();
+                ApplicationLifetime.StopApplication();
 
                 throw new InvalidOperationException(errorString, e);
             }
