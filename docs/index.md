@@ -1,5 +1,7 @@
 ﻿# WindowsServiceExtensions
-This package is relevant to developers who want to write reliable background tasks running under a Windows Service.
+This package is relevant to developers who want to write reliable background tasks running under a Windows Service. The .NET BackgroundService is nice, but is abstracted away from a Windows Service, because it's not designed to be one.
+
+This is meant as a utility library that glues BackgroundServices and Windows Services together.
 
 ## Installation
 Through [NuGet](https://www.nuget.org/packages/CodeCaster.WindowsServiceExtensions/):
@@ -40,10 +42,12 @@ public class MyCoolBackgroundService : BackgroundService
 As long as your `ExecuteAsync()` runs, you have a _.NET_ (not Widows!) background service (`IHostedService`) running. When a hosted service throws an exception, that will stop the .NET Host that runs your application, and an event will be logged (as long as it exists and/or permisions are adequate).
 
 ## Lifetime
-TODO: explain.
+So far, so good, but...
+
+**TODO**: explain lifetime.
 
 ## Host Builder (dependency injection)
-On your Host Builder, call `UsePowerEventAwareWindowsService()`:
+To use this, call `UsePowerEventAwareWindowsService()` on your Host Builder:
 
 ```C#
 using CodeCaster.WindowsServiceExtensions;
@@ -94,7 +98,7 @@ public class MyCoolBackgroundService : PowerEventAwareBackgroundService
 
 You might receive multiple `OnPowerEvent()` calls in succession, be sure to lock and/or debounce where appropriate.
 
-TODO: we can do that.
+**TODO**: we can do that.
 
 Do note that the statuses received can vary. You get either `ResumeSuspend`, `ResumeAutomatic` or both, never neither, after a machine wake, reboot or boot.
 
@@ -103,4 +107,4 @@ When the task returns, the host stays up. This might be a problem if you start m
 
 ## Docs demo
 
-[See docs demo](WindowsServiceExtensions/demo)
+[See docs demo](demo)
