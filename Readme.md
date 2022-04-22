@@ -13,7 +13,7 @@ Through [NuGet](https://www.nuget.org/packages/CodeCaster.WindowsServiceExtensio
 ## Usage
 These methods from this package allow your IHostedServices to respond to this power state change:
 
-* On your Host Builder, call `UsePowerEventAwareWindowsService()` instead of [`UseWindowsService()`](https://docs.microsoft.com/en-us/dotnet/api/microsoft.extensions.hosting.windowsservicelifetimehostbuilderextensions.usewindowsservice?view=dotnet-plat-ext-3.1).
+* On your Host Builder, call `UseWindowsServiceExtensions()` instead of [`UseWindowsService()`](https://docs.microsoft.com/en-us/dotnet/api/microsoft.extensions.hosting.windowsservicelifetimehostbuilderextensions.usewindowsservice?view=dotnet-plat-ext-3.1).
 * Instead of letting your service inherit [`Microsoft.Extensions.Hosting.BackgroundService`](https://docs.microsoft.com/en-us/dotnet/api/microsoft.extensions.hosting.backgroundservice?view=dotnet-plat-ext-5.0), inherit from `CodeCaster.WindowsServiceExtensions.PowerEventAwareBackgroundService`.
 * Implement the method `public override bool OnPowerEvent(PowerBroadcastStatus powerStatus)` and do your thing when it's called with a certain status.
 

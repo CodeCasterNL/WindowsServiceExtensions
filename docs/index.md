@@ -47,7 +47,7 @@ So far, so good, but...
 **TODO**: explain lifetime.
 
 ## Host Builder (dependency injection)
-To use this, call `UsePowerEventAwareWindowsService()` on your Host Builder:
+To use this, call `UseWindowsServiceExtensions()` on your Host Builder:
 
 ```C#
 using CodeCaster.WindowsServiceExtensions;
@@ -62,7 +62,7 @@ var hostBuilder = new HostBuilder()
         s.AddHostedService<MyCoolBackgroundService>();
     })
     // instead of .UseWindowsService():    
-    .UsePowerEventAwareWindowsService();
+    .UseWindowsServiceExtensions();
 ```
 
 ## Power events

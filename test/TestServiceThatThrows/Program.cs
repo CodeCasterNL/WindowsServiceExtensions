@@ -47,7 +47,7 @@ namespace TestServiceThatThrows
                     s.AddHostedService<MyFaultyBackgroundService>();
                 })
                 .UseWindowsService()
-                //.UsePowerEventAwareWindowsService()
+                //.UseWindowsServiceExtensions()
                 .Build()
                 .RunAsync();
         }

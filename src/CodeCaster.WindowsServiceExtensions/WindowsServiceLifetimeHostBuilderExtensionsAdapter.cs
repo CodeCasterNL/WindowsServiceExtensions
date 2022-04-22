@@ -17,9 +17,9 @@ namespace CodeCaster.WindowsServiceExtensions
         /// <param name="hostBuilder">The Microsoft.Extensions.Hosting.IHostBuilder to operate on.</param>
         /// <returns>The same instance of the Microsoft.Extensions.Hosting.IHostBuilder for chaining.</returns>
         /// <remarks>This is context aware and will only activate if it detects the process is running as a Windows Service.</remarks>
-        public static IHostBuilder UsePowerEventAwareWindowsService(this IHostBuilder hostBuilder)
+        public static IHostBuilder UseWindowsServiceExtensions(this IHostBuilder hostBuilder)
         {
-            return UsePowerEventAwareWindowsService(hostBuilder, _ => { });
+            return UseWindowsServiceExtensions(hostBuilder, _ => { });
         }
 
         /// <summary>
@@ -29,7 +29,7 @@ namespace CodeCaster.WindowsServiceExtensions
         /// <param name="configure">An action to configure the lifetime's options.</param>
         /// <returns>The same instance of the Microsoft.Extensions.Hosting.IHostBuilder for chaining.</returns>
         /// <remarks>This is context aware and will only activate if it detects the process is running as a Windows Service.</remarks>
-        public static IHostBuilder UsePowerEventAwareWindowsService(this IHostBuilder hostBuilder, Action<WindowsServiceLifetimeOptions> configure)
+        public static IHostBuilder UseWindowsServiceExtensions(this IHostBuilder hostBuilder, Action<WindowsServiceLifetimeOptions> configure)
         {
             if (!WindowsServiceHelpers.IsWindowsService())
             {
