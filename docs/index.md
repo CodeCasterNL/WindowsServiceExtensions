@@ -41,7 +41,7 @@ public class MyCoolBackgroundService : BackgroundService
 }
 ```
 
-As long as your `ExecuteAsync()` runs, you have a _.NET_ (not Widows!) background service (`IHostedService`) running. When a hosted service throws an exception, that will stop the .NET Host that runs your application, and an event will be logged (as long as it exists and/or permisions are adequate).
+As long as your `ExecuteAsync()` runs, you have a _.NET_ (not Widows!) background service (`IHostedService`) running. When service start immediately throws an exception, that will stop the .NET Host that runs your application, and an event will be logged (as long as it exists and/or permisions are adequate).
 
 ## Lifetime
 So far, so good, but...
@@ -67,14 +67,39 @@ var hostBuilder = new HostBuilder()
     .UseWindowsServiceExtensions();
 ```
 
+## TryExecuteAsync
+This library seals `Microsoft.Extensions.Hosting.BackgroundService.ExecuteAsync()`, to stop the host when an exception occurs in a background service. To apply this to your code, inherit from `CodeCaster.WindowsServiceExtensions.HostTerminatingBackgroundService` instead of [`Microsoft.Extensions.Hosting.BackgroundService`](https://docs.microsoft.com/en-us/dotnet/api/microsoft.extensions.hosting.backgroundservice?view=dotnet-plat-ext-5.0).
+
+```csharp
+public class MyCoolBackgroundService : BackgroundService
+{
+    private readonly ILogger<MyCoolBackgroundService> _logger;
+
+    public MyCoolBackgroundService(ILogger<MyCoolBackgroundService> logger, IHostApplicationLifetime applicationLifetime)
+        : base(logger, applicationLifetime)
+    {
+        _logger = logger;
+    }
+
+    protected override async Task TryExecuteAsync(CancellationToken stoppingToken)
+    {
+        // Fake doing at least some work...
+        await Task.Delay(1000, stoppingToken);
+
+        // This will now stop the host application.
+        throw new InvalidOperationException("This service is not supposed to start");
+    }
+}
+```
+
 ## Power events
-If you let your service inherit `PowerEventAwareBackgroundService` instead of [`Microsoft.Extensions.Hosting.BackgroundService`](https://docs.microsoft.com/en-us/dotnet/api/microsoft.extensions.hosting.backgroundservice?view=dotnet-plat-ext-5.0) (the former inherits the latter), you get a new method:
+If you let your service inherit `CodeCaster.WindowsServiceExtensions.PowerEventAwareBackgroundService` instead of [`Microsoft.Extensions.Hosting.BackgroundService`](https://docs.microsoft.com/en-us/dotnet/api/microsoft.extensions.hosting.backgroundservice?view=dotnet-plat-ext-5.0) (the former indirectly inherits the latter, see above), you get a new method:
 
 ```C#
 public class MyCoolBackgroundService : PowerEventAwareBackgroundService
 {
     // This still runs your long-running background job
-    protected override Task ExecuteAsync(CancellationToken stoppingToken)
+    protected override Task TryExecuteAsync(CancellationToken stoppingToken)
     {
         // Do your continuous or periodic background work.
         await SomeLongRunningTaskAsync();

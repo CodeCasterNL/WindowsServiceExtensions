@@ -68,6 +68,46 @@ namespace TestServiceThatThrows
             throw new InvalidOperationException("This service is not supposed to start");
         }
     }
+    
+    public class MyHostTerminatingBackgroundService : HostTerminatingBackgroundService
+    {
+        private readonly ILogger<MyHostTerminatingBackgroundService> _logger;
+
+        public MyHostTerminatingBackgroundService(ILogger<MyHostTerminatingBackgroundService> logger, IHostApplicationLifetime applicationLifetime)
+            : base(logger, applicationLifetime)
+        {
+            _logger = logger;
+        }
+
+        protected override async Task TryExecuteAsync(CancellationToken stoppingToken)
+        {
+            // Fake doing at least some work...
+            await Task.Delay(1000, stoppingToken);
+
+            // This will now stop the host application.
+            throw new InvalidOperationException("This service is not supposed to start");
+        }
+    }
+
+    public class MyHostTerminatingPowerEventAwareBackgroundService : HostTerminatingBackgroundService
+    {
+        private readonly ILogger<MyHostTerminatingPowerEventAwareBackgroundService> _logger;
+
+        public MyHostTerminatingPowerEventAwareBackgroundService(ILogger<MyHostTerminatingPowerEventAwareBackgroundService> logger, IHostApplicationLifetime applicationLifetime)
+            : base(logger, applicationLifetime)
+        {
+            _logger = logger;
+        }
+
+        protected override async Task TryExecuteAsync(CancellationToken stoppingToken)
+        {
+            // Fake doing at least some work...
+            await Task.Delay(1000, stoppingToken);
+
+            // This will now stop the host application.
+            throw new InvalidOperationException("This service is not supposed to start");
+        }
+    }
 
     public class MyHappyBackgroundService : BackgroundService
     {
@@ -109,7 +149,7 @@ namespace TestServiceThatThrows
 
     public static class Program
     {
-        public static async Task Main(string[] args)
+        public static async Task Main()
         {
             if (!Debugger.IsAttached)
             {
@@ -126,9 +166,16 @@ namespace TestServiceThatThrows
                     s.AddHostedService<MyHappyBackgroundService>();
                     s.AddHostedService<QuicklyQuittingBackgroundService>();
 
+                    // This one breaks in OnStart().
                     //s.AddHostedService<MyFaultyService>();
-                    s.AddHostedService<MyFaultyBackgroundService>();
 
+                    // This one throws after 500ms but doesn't take down the host.
+                    //s.AddHostedService<MyFaultyBackgroundService>();
+
+                    // This one should stop the application.
+                    //s.AddHostedService<MyHostTerminatingBackgroundService>();
+                    s.AddHostedService<MyHostTerminatingPowerEventAwareBackgroundService>();
+                    
                     //throw new InvalidOperationException("Heh");
                 })
                 //.UseWindowsService()
