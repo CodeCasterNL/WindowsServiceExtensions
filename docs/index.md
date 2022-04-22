@@ -64,6 +64,7 @@ var hostBuilder = new HostBuilder()
 ## Power events
 If you let your service inherit `PowerEventAwareBackgroundService` instead of [`Microsoft.Extensions.Hosting.BackgroundService`](https://docs.microsoft.com/en-us/dotnet/api/microsoft.extensions.hosting.backgroundservice?view=dotnet-plat-ext-5.0) (the former inherits the latter), you get a new method:
 
+```C#
 public class MyCoolBackgroundService : PowerEventAwareBackgroundService
 {
     // This still runs your long-running background job
@@ -89,6 +90,7 @@ public class MyCoolBackgroundService : PowerEventAwareBackgroundService
         }
     }
 }
+```
 
 You might receive multiple `OnPowerEvent()` calls in succession, be sure to lock and/or debounce where appropriate.
 
