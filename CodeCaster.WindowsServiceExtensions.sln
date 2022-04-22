@@ -1,12 +1,14 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.31229.75
+# Visual Studio Version 17
+VisualStudioVersion = 17.1.32414.318
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CodeCaster.WindowsServiceExtensions", "src\CodeCaster.WindowsServiceExtensions\CodeCaster.WindowsServiceExtensions.csproj", "{CC230E5D-8600-4048-8F10-E84A80F77DDC}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{4B4ADAD2-7E93-44E5-8376-3B11173671EE}"
 	ProjectSection(SolutionItems) = preProject
+		.gitignore = .gitignore
+		docs\Docs.shproj = docs\Docs.shproj
 		LICENSE = LICENSE
 		Readme.md = Readme.md
 	EndProjectSection
@@ -18,7 +20,12 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "GitHub Workflows", "GitHub 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestServiceThatThrows", "test\TestServiceThatThrows\TestServiceThatThrows.csproj", "{A426812E-CB26-47F2-B914-17D87312C51F}"
 EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Docs", "Docs.shproj", "{62D35936-704A-4F38-9882-E3209079EA47}"
+EndProject
 Global
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		Docs.projitems*{62d35936-704a-4f38-9882-e3209079ea47}*SharedItemsImports = 13
+	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU

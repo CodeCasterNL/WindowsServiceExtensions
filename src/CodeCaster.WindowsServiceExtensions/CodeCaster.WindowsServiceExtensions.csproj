@@ -20,12 +20,12 @@
 
     <Authors>CodeCaster</Authors>
     <Company>CodeCaster</Company>
-    <Copyright>© 2021 CodeCaster</Copyright>
-    <Description>Makes your .NET 5 BackgroundServices power-event-aware.</Description>
+    <Copyright>© 2021-2022 CodeCaster</Copyright>
+    <Description>Makes your .NET 5+ BackgroundServices power-event-aware.</Description>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All"/>
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
 
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="5.0.0" />
     <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="5.0.1" />
