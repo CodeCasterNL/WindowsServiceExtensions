@@ -20,4 +20,4 @@ These methods from this package allow your IHostedServices to respond to this po
 Do note that the statuses received can vary. You get either `ResumeSuspend`, `ResumeAutomatic` or both, never neither, after a machine wake, reboot or boot. 
 
 ## Documentation
-For extended documentation, see https://codecasternl.github.io/WindowsServiceExtensions/.
+For examples and more specific documentation, see https://codecasternl.github.io/WindowsServiceExtensions/.

@@ -1,7 +1,9 @@
-﻿# WindowsServiceExtensions
+﻿# Windows Service Extensions
 This package is relevant to developers who want to write reliable background tasks running under a Windows Service. The .NET BackgroundService is nice, but is abstracted away from a Windows Service, because it's not designed to be one.
 
 This is meant as a utility library that glues BackgroundServices and Windows Services together.
+
+**NOTE**: these docs are currently for the develop branch. Once the according version is released, it'll be from main.
 
 ## Installation
 Through [NuGet](https://www.nuget.org/packages/CodeCaster.WindowsServiceExtensions/):
