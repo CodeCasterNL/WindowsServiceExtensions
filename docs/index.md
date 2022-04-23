@@ -1,5 +1,6 @@
 ﻿---
 title: Documentation Home
+layout: cayman-with-menu
 order: 1
 ---
 # Windows Service Extensions
