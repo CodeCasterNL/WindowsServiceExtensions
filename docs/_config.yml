@@ -1,3 +1,9 @@
-theme: jekyll-theme-cayman
-layout: cayman-with-menu
-description: CodeCaster.WindowsServices documentation
+theme: "jekyll-theme-cayman"
+description: "CodeCaster.WindowsServices documentation"
+url: "https://codecasternl.github.io/WindowsServiceExtensions/"
+defaults:
+  -
+    scope:
+      path: "" # everything
+    values:
+      layout: "cayman-with-menu"
