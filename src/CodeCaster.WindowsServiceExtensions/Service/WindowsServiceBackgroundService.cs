@@ -71,7 +71,7 @@ namespace CodeCaster.WindowsServiceExtensions.Service
                 // The host will shut down with code 0 if we don't do this.
                 const int exitCode = -1;
 
-                Logger.LogWarning("Setting service exit code to {exitCode}", exitCode);
+                Logger.LogInformation("Setting process exit code to {exitCode}", exitCode);
 
                 // Doesn't work, overwritten by ConsoleLifetime?
                 Environment.ExitCode = exitCode;
@@ -79,9 +79,16 @@ namespace CodeCaster.WindowsServiceExtensions.Service
 #pragma warning disable CA1416 // Validate platform compatibility - we are a Windows Service.
                 if (ServiceLifetime != null)
                 {
+                    Logger.LogWarning("Setting service exit code to {exitCode}", exitCode);
+
                     ServiceLifetime.ExitCode = exitCode;
+
+                    // This will probably yank the .NET Host from under us, not executing any more (or just a little) code.
+                    ServiceLifetime.Stop();
                 }
 #pragma warning restore CA1416 // Validate platform compatibility
+
+                ApplicationLifetime.StopApplication();
 
                 // Let the WindowsServiceLifetime handle the exception.
                 throw;
