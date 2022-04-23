@@ -49,7 +49,7 @@ So far, so good, but...
 **TODO**: explain lifetime.
 
 ## Host Builder (dependency injection)
-To use this, call `UseWindowsServiceExtensions()` on your Host Builder:
+To receive power events, call `UseWindowsServiceExtensions()` on your Host Builder:
 
 ```C#
 using CodeCaster.WindowsServiceExtensions;
@@ -67,33 +67,15 @@ var hostBuilder = new HostBuilder()
     .UseWindowsServiceExtensions();
 ```
 
-## TryExecuteAsync
-This library seals `Microsoft.Extensions.Hosting.BackgroundService.ExecuteAsync()`, to stop the host when an exception occurs in a background service. To apply this to your code, inherit from `CodeCaster.WindowsServiceExtensions.HostTerminatingBackgroundService` instead of [`Microsoft.Extensions.Hosting.BackgroundService`](https://docs.microsoft.com/en-us/dotnet/api/microsoft.extensions.hosting.backgroundservice?view=dotnet-plat-ext-5.0).
+## TryExecuteAsync - .NET Platform Extensions 5
+This library used to contain exception handling code in a base service, which is no longer needed for .NET Platform Extensions 6, see [Docs / .NET / .NET fundamentals / Breaking changes / Unhandled exceptions from a BackgroundService](https://docs.microsoft.com/en-us/dotnet/core/compatibility/core-libraries/6.0/hosting-exception-handling):
 
-```csharp
-public class MyCoolBackgroundService : BackgroundService
-{
-    private readonly ILogger<MyCoolBackgroundService> _logger;
+> In previous versions, when a BackgroundService throws an unhandled exception, the exception is lost and the service appears unresponsive. .NET 6 fixes this behavior by logging the exception and stopping the host.
 
-    public MyCoolBackgroundService(ILogger<MyCoolBackgroundService> logger, IHostApplicationLifetime applicationLifetime)
-        : base(logger, applicationLifetime)
-    {
-        _logger = logger;
-    }
-
-    protected override async Task TryExecuteAsync(CancellationToken stoppingToken)
-    {
-        // Fake doing at least some work...
-        await Task.Delay(1000, stoppingToken);
-
-        // This will now stop the host application.
-        throw new InvalidOperationException("This service is not supposed to start");
-    }
-}
-```
+With the [retirement of .NET 5 on May 8, 2022](https://docs.microsoft.com/en-us/lifecycle/products/microsoft-net-and-net-core), these WindowsServiceExtensions target .NET (Platform Extensions) 6 going forward from v3.0.0.
 
 ## Power events
-If you let your service inherit `CodeCaster.WindowsServiceExtensions.PowerEventAwareBackgroundService` instead of [`Microsoft.Extensions.Hosting.BackgroundService`](https://docs.microsoft.com/en-us/dotnet/api/microsoft.extensions.hosting.backgroundservice?view=dotnet-plat-ext-5.0) (the former indirectly inherits the latter, see above), you get a new method:
+If you let your service inherit `CodeCaster.WindowsServiceExtensions.Service.PowerEventAwareBackgroundService` instead of [`Microsoft.Extensions.Hosting.BackgroundService`](https://docs.microsoft.com/en-us/dotnet/api/microsoft.extensions.hosting.backgroundservice?view=dotnet-plat-ext-5.0) (the former indirectly inherits the latter, see above), you get a new method:
 
 ```C#
 public class MyCoolBackgroundService : PowerEventAwareBackgroundService
