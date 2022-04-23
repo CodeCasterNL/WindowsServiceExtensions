@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 // ReSharper disable MemberCanBeProtected.Global, MemberCanBePrivate.Global - public API
-namespace CodeCaster.WindowsServiceExtensions
+namespace CodeCaster.WindowsServiceExtensions.Lifetime
 {
     /// <summary>
     /// Properly reports an error when DI of a background service fails, instead of having a service running zero hosted tasks.

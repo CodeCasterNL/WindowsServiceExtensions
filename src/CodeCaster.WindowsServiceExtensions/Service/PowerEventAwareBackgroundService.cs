@@ -2,10 +2,12 @@
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace CodeCaster.WindowsServiceExtensions
+namespace CodeCaster.WindowsServiceExtensions.Service
 {
     /// <summary>
     /// Base class for implementing a long running <see cref="IHostedService"/> as a Windows Service that can react to power state changes.
+    /// 
+    /// Terminates the host application when an exception occurs in <see cref="HostTerminatingBackgroundService.TryExecuteAsync"/>.
     /// </summary>
     public abstract class PowerEventAwareBackgroundService : HostTerminatingBackgroundService, IPowerEventAwareHostedService
     {

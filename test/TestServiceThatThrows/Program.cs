@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using CodeCaster.WindowsServiceExtensions;
+using CodeCaster.WindowsServiceExtensions.Service;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -81,6 +82,8 @@ namespace TestServiceThatThrows
 
         protected override async Task TryExecuteAsync(CancellationToken stoppingToken)
         {
+            _logger.LogInformation("Sleeping, then throwing");
+
             // Fake doing at least some work...
             await Task.Delay(1000, stoppingToken);
 
@@ -89,7 +92,7 @@ namespace TestServiceThatThrows
         }
     }
 
-    public class MyHostTerminatingPowerEventAwareBackgroundService : HostTerminatingBackgroundService
+    public class MyHostTerminatingPowerEventAwareBackgroundService : PowerEventAwareBackgroundService
     {
         private readonly ILogger<MyHostTerminatingPowerEventAwareBackgroundService> _logger;
 
@@ -101,6 +104,8 @@ namespace TestServiceThatThrows
 
         protected override async Task TryExecuteAsync(CancellationToken stoppingToken)
         {
+            _logger.LogInformation("Sleeping, then throwing");
+            
             // Fake doing at least some work...
             await Task.Delay(1000, stoppingToken);
 

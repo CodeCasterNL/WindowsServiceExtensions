@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.ServiceProcess;
 using System.Threading.Tasks;
+using CodeCaster.WindowsServiceExtensions.Service;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Hosting.WindowsServices;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace CodeCaster.WindowsServiceExtensions
+namespace CodeCaster.WindowsServiceExtensions.Lifetime
 {
     /// <summary>
     /// Basically the same as <see cref="HostApplicationStartupLifetime"/>, but states it can handle power events, and forwards those to the <see cref="IHostedService"/>s that claim to be capable of the same (<see cref="IPowerEventAwareHostedService"/>).

@@ -3,6 +3,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Hosting.WindowsServices;
 using System;
 using System.Linq;
+using CodeCaster.WindowsServiceExtensions.Lifetime;
 
 namespace CodeCaster.WindowsServiceExtensions
 {

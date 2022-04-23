@@ -1,7 +1,7 @@
 ﻿using System.ServiceProcess;
 using Microsoft.Extensions.Hosting;
 
-namespace CodeCaster.WindowsServiceExtensions
+namespace CodeCaster.WindowsServiceExtensions.Service
 {
     /// <summary>
     /// An <see cref="IHostedService"/> that runs as a Windows Service that can react to power state changes.
