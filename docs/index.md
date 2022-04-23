@@ -43,36 +43,12 @@ public class MyCoolBackgroundService : BackgroundService
 
 As long as your `ExecuteAsync()` runs, you have a _.NET_ (not Widows!) background service (`IHostedService`) running. When service start immediately throws an exception, that will stop the .NET Host that runs your application, and an event will be logged (as long as it exists and/or permisions are adequate).
 
-## Lifetime
-So far, so good, but...
-
-**TODO**: explain lifetime.
-
-## Host Builder (dependency injection)
-To receive power events, call `UseWindowsServiceExtensions()` on your Host Builder:
-
-```C#
-using CodeCaster.WindowsServiceExtensions;
-
-// ...
-
-var hostBuilder = new HostBuilder()
-    .ConfigureLogging(l => l.AddConsole())
-    .ConfigureServices((s) =>
-    {
-        // Add our IHostedService
-        s.AddHostedService<MyCoolBackgroundService>();
-    })
-    // instead of .UseWindowsService():    
-    .UseWindowsServiceExtensions();
-```
-
-## TryExecuteAsync - .NET Platform Extensions 5
+## Exception handling
 This library used to contain exception handling code in a base service, which is no longer needed for .NET Platform Extensions 6, see [Docs / .NET / .NET fundamentals / Breaking changes / Unhandled exceptions from a BackgroundService](https://docs.microsoft.com/en-us/dotnet/core/compatibility/core-libraries/6.0/hosting-exception-handling):
 
 > In previous versions, when a BackgroundService throws an unhandled exception, the exception is lost and the service appears unresponsive. .NET 6 fixes this behavior by logging the exception and stopping the host.
 
-With the [retirement of .NET 5 on May 8, 2022](https://docs.microsoft.com/en-us/lifecycle/products/microsoft-net-and-net-core), these WindowsServiceExtensions target .NET (Platform Extensions) 6 going forward from v3.0.0.
+With the [retirement of .NET 5 on May 8, 2022](https://docs.microsoft.com/en-us/lifecycle/products/microsoft-net-and-net-core), this WindowsServiceExtensions library target .NET (Platform Extensions) 6 going forward from v3.0.0.
 
 ## Power events
 If you let your service inherit `CodeCaster.WindowsServiceExtensions.Service.PowerEventAwareBackgroundService` instead of [`Microsoft.Extensions.Hosting.BackgroundService`](https://docs.microsoft.com/en-us/dotnet/api/microsoft.extensions.hosting.backgroundservice?view=dotnet-plat-ext-5.0) (the former indirectly inherits the latter, see above), you get a new method:
@@ -85,6 +61,9 @@ public class MyCoolBackgroundService : PowerEventAwareBackgroundService
     {
         // Do your continuous or periodic background work.
         await SomeLongRunningTaskAsync();
+
+        // We're done, let the service stop.
+        ApplicationLifetime.StopApplication();
     }
 
     // This one tells you when we're shutting down or resuming from semi-hibernation
@@ -110,6 +89,27 @@ You might receive multiple `OnPowerEvent()` calls in succession, be sure to lock
 **TODO**: we can do that.
 
 Do note that the statuses received can vary. You get either `ResumeSuspend`, `ResumeAutomatic` or both, never neither, after a machine wake, reboot or boot.
+
+
+## Host Builder (dependency injection)
+To receive power events, call `UseWindowsServiceExtensions()` on your Host Builder:
+
+```C#
+using CodeCaster.WindowsServiceExtensions;
+
+// ...
+
+var hostBuilder = new HostBuilder()
+    .ConfigureLogging(l => l.AddConsole())
+    .ConfigureServices((s) =>
+    {
+        // Add our IHostedService
+        s.AddHostedService<MyCoolBackgroundService>();
+    })
+    // instead of .UseWindowsService():    
+    .UseWindowsServiceExtensions();
+```
+
 
 ## TODO
 When the task returns, the host stays up. This might be a problem if you start multiple background services that should shut down the application when the last one has done its work.

@@ -69,28 +69,6 @@ namespace TestServiceThatThrows
             throw new InvalidOperationException("This service is not supposed to start");
         }
     }
-    
-    public class MyHostTerminatingBackgroundService : HostTerminatingBackgroundService
-    {
-        private readonly ILogger<MyHostTerminatingBackgroundService> _logger;
-
-        public MyHostTerminatingBackgroundService(ILogger<MyHostTerminatingBackgroundService> logger, IHostApplicationLifetime applicationLifetime)
-            : base(logger, applicationLifetime)
-        {
-            _logger = logger;
-        }
-
-        protected override async Task TryExecuteAsync(CancellationToken stoppingToken)
-        {
-            _logger.LogInformation("Sleeping, then throwing");
-
-            // Fake doing at least some work...
-            await Task.Delay(1000, stoppingToken);
-
-            // This will now stop the host application.
-            throw new InvalidOperationException("This service is not supposed to start");
-        }
-    }
 
     public class MyHostTerminatingPowerEventAwareBackgroundService : PowerEventAwareBackgroundService
     {
@@ -102,7 +80,7 @@ namespace TestServiceThatThrows
             _logger = logger;
         }
 
-        protected override async Task TryExecuteAsync(CancellationToken stoppingToken)
+        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             _logger.LogInformation("Sleeping, then throwing");
             
