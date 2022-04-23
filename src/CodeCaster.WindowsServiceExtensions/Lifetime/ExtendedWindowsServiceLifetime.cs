@@ -35,7 +35,7 @@ namespace CodeCaster.WindowsServiceExtensions.Lifetime
             CanHandleSessionChangeEvent = true;
         }
 
-#pragma warning disable CA1416 // Validate platform compatibility - constructor does that
+#pragma warning disable CA1416 // Validate platform compatibility - constructor handles that
         /// <summary>
         /// Store a copy of all registered <see cref="IHostedService"/>s that implement our interface
         /// </summary>
@@ -114,4 +114,4 @@ namespace CodeCaster.WindowsServiceExtensions.Lifetime
         }
     }
 }
-#pragma warning restore CA1416 // Validate platform compatibility - constructor does that
+#pragma warning restore CA1416 // Validate platform compatibility - constructor handles that

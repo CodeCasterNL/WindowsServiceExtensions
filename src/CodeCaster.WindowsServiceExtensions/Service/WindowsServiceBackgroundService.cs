@@ -2,6 +2,7 @@
 using System.ServiceProcess;
 using System.Threading;
 using System.Threading.Tasks;
+using CodeCaster.WindowsServiceExtensions.Lifetime;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
@@ -19,14 +20,24 @@ namespace CodeCaster.WindowsServiceExtensions.Service
         protected readonly ILogger<IHostedService> Logger;
 
         /// <summary>
+        /// To interact with the Service Control Manager.
+        /// </summary>
+        protected readonly ExtendedWindowsServiceLifetime? ServiceLifetime;
+
+        /// <summary>
         /// To ask nicely to stop the host when cancellation is requested. We're just a BackgroundService, returning from ExecuteAsync() won't stop the host application. Better us than Windows.
         /// </summary>
         protected readonly IHostApplicationLifetime ApplicationLifetime;
 
         /// <inheritdoc />
-        protected WindowsServiceBackgroundService(ILogger<IHostedService> logger, IHostApplicationLifetime applicationLifetime)
+        protected WindowsServiceBackgroundService(
+            ILogger<IHostedService> logger,
+            IHostLifetime hostLifetime,
+            IHostApplicationLifetime applicationLifetime
+        )
         {
             Logger = logger;
+            ServiceLifetime = hostLifetime as ExtendedWindowsServiceLifetime;
             ApplicationLifetime = applicationLifetime;
         }
 
@@ -60,12 +71,17 @@ namespace CodeCaster.WindowsServiceExtensions.Service
                 // The host will shut down with code 0 if we don't do this.
                 const int exitCode = -1;
 
-                Logger.LogWarning("Setting exit code to {exitCode}", exitCode);
+                Logger.LogWarning("Setting service exit code to {exitCode}", exitCode);
 
+                // Doesn't work, overwritten by ConsoleLifetime?
                 Environment.ExitCode = exitCode;
 
-                // TODO: the above does not work, returns 0 on console. Does Environment.Exit(-1) work and still log to the event log?
-                Environment.Exit(-1);
+#pragma warning disable CA1416 // Validate platform compatibility - we are a Windows Service.
+                if (ServiceLifetime != null)
+                {
+                    ServiceLifetime.ExitCode = exitCode;
+                }
+#pragma warning restore CA1416 // Validate platform compatibility
 
                 // Let the WindowsServiceLifetime handle the exception.
                 throw;

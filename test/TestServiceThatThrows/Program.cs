@@ -10,6 +10,50 @@ using Microsoft.Extensions.Logging;
 
 namespace TestServiceThatThrows
 {
+    public static class Program
+    {
+        public static async Task Main()
+        {
+            if (!Debugger.IsAttached)
+            {
+                Console.WriteLine("Waiting 5s for debugger to be attached...");
+                Thread.Sleep(5000);
+                Debugger.Break();
+            }
+
+            await new HostBuilder()
+                .ConfigureLogging(l => l.AddConsole())
+                .ConfigureServices((s) =>
+                {
+                    // Services to run are defined below.
+
+                    // These three run successfully.
+                    s.AddHostedService<MyHappyService>();
+                    s.AddHostedService<MyHappyBackgroundService>();
+                    s.AddHostedService<QuicklyQuittingBackgroundService>();
+
+                    // This one breaks in OnStart() (should give startup error).
+                    //s.AddHostedService<MyFaultyService>();
+
+                    // This one throws after 500ms and should take down the host (.NET PE 6+), but does not trigger an error response (exit code 0).
+                    //s.AddHostedService<MyFaultyBackgroundService>();
+
+                    // This one should stop the application with exit code -1, triggering an error.
+                    s.AddHostedService<MyFaultyWindowsServiceBackgroundService>();
+
+                    // Should give startup error.
+                    //throw new InvalidOperationException("Heh");
+                })
+                //.UseWindowsService()
+                .UseWindowsServiceExtensions(o =>
+                {
+                    //o.ServiceName = ...
+                })
+                .Build()
+                .RunAsync();
+        }
+    }
+
     public class MyHappyService : IHostedService
     {
         private readonly ILogger<MyHappyService> _logger;
@@ -72,17 +116,18 @@ namespace TestServiceThatThrows
 
     public class MyFaultyWindowsServiceBackgroundService : WindowsServiceBackgroundService
     {
-        private readonly ILogger<MyFaultyWindowsServiceBackgroundService> _logger;
-
-        public MyFaultyWindowsServiceBackgroundService(ILogger<MyFaultyWindowsServiceBackgroundService> logger, IHostApplicationLifetime applicationLifetime)
-            : base(logger, applicationLifetime)
+        public MyFaultyWindowsServiceBackgroundService(
+            ILogger<MyFaultyWindowsServiceBackgroundService> logger,
+            IHostLifetime hostLifetime,
+            IHostApplicationLifetime applicationLifetime
+        )
+            : base(logger, hostLifetime, applicationLifetime)
         {
-            _logger = logger;
         }
 
         protected override async Task TryExecuteAsync(CancellationToken stoppingToken)
         {
-            _logger.LogInformation("Sleeping, then throwing");
+            Logger.LogInformation("Sleeping, then throwing");
             
             // Fake doing at least some work...
             await Task.Delay(1000, stoppingToken);
@@ -127,46 +172,6 @@ namespace TestServiceThatThrows
             _logger.LogInformation("Not surprisingly, quitting.");
 
             return Task.CompletedTask;
-        }
-    }
-
-    public static class Program
-    {
-        public static async Task Main()
-        {
-            if (!Debugger.IsAttached)
-            {
-                Console.WriteLine("Waiting 5s for debugger to be attached...");
-                Thread.Sleep(5000);
-                Debugger.Break();
-            }
-
-            await new HostBuilder()
-                .ConfigureLogging(l => l.AddConsole())
-                .ConfigureServices((s) =>
-                {
-                    s.AddHostedService<MyHappyService>();
-                    s.AddHostedService<MyHappyBackgroundService>();
-                    s.AddHostedService<QuicklyQuittingBackgroundService>();
-
-                    // This one breaks in OnStart().
-                    //s.AddHostedService<MyFaultyService>();
-
-                    // This one throws after 500ms and should take down the host (.NET PE 6+).
-                    //s.AddHostedService<MyFaultyBackgroundService>();
-
-                    // This one should stop the application.
-                    //s.AddHostedService<MyWindowsServiceBackgroundService>();
-                    
-                    //throw new InvalidOperationException("Heh");
-                })
-                //.UseWindowsService()
-                .UseWindowsServiceExtensions(o =>
-                {
-                    //o.ServiceName = ...
-                })
-                .Build()
-                .RunAsync();
         }
     }
 }

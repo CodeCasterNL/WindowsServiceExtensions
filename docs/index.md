@@ -79,6 +79,15 @@ If you let your service inherit `CodeCaster.WindowsServiceExtensions.Service.Win
 ```csharp
 public class MyCoolBackgroundService : WindowsServiceBackgroundService
 {
+    public MyCoolBackgroundService(
+        ILogger<MyFaultyWindowsServiceBackgroundService> logger,
+        IHostLifetime hostLifetime,
+        IHostApplicationLifetime applicationLifetime
+    )
+        : base(logger, hostLifetime, applicationLifetime)
+    {
+    }
+
     // This still runs your long-running background job
     protected override Task TryExecuteAsync(CancellationToken stoppingToken)
     {
@@ -86,6 +95,7 @@ public class MyCoolBackgroundService : WindowsServiceBackgroundService
         await SomeLongRunningTaskAsync();
 
         // We're done, let the service stop.
+        ServiceLifetime.ExitCode = 0;
         ApplicationLifetime.StopApplication();
     }
 
