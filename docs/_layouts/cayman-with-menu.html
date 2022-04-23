@@ -32,7 +32,9 @@
             {% assign sorted_pages = site.pages | sort:"order" %}
             |
             {% for node in sorted_pages %}
-                <span><a href=".{{node.url}}" style="color: inherit" title="{{node.title}}">Test: {{node.title}}</a></span> |
+                {% if node.title %}
+                    <span><a href=".{{node.url}}" style="color: inherit" title="{{node.title}}">{{node.title}}</a></span> |
+                {% endif %}
             {% endfor %}
         </p>
     </header>
