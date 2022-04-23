@@ -13,7 +13,7 @@ Through [NuGet](https://www.nuget.org/packages/CodeCaster.WindowsServiceExtensio
 ## Why should you use this?
 A usual Windows Service program might look like this:
 
-```C#
+```csharp
 var hostBuilder = new HostBuilder()
     .ConfigureLogging(l => l.AddConsole())
     .ConfigureServices((s) =>
@@ -30,7 +30,7 @@ await host.RunAsync();
 
 And then your service would look like this:
 
-```C#
+```csharp
 public class MyCoolBackgroundService : BackgroundService
 {
     protected override Task ExecuteAsync(CancellationToken stoppingToken)
@@ -41,7 +41,7 @@ public class MyCoolBackgroundService : BackgroundService
 }
 ```
 
-As long as your `ExecuteAsync()` runs, you have a _.NET_ (not Widows!) background service (`IHostedService`) running. When service start immediately throws an exception, that will stop the .NET Host that runs your application, and an event will be logged (as long as it exists and/or permisions are adequate).
+As long as your `ExecuteAsync()` runs, you have one or more _.NET_ (not Widows!) background services (`IHostedService`) running inside your executable hosting the .NET application. When the service start request immediately throws an exception (from dependency injection errors to immediate errors in `ExecuteAsync()`), that will stop the .NET Host that runs your application, and an event will be logged (as long as it exists and/or permisions are adequate).
 
 ## Exception handling
 This library used to contain exception handling code in a base service, which is no longer needed for .NET Platform Extensions 6, see [Docs / .NET / .NET fundamentals / Breaking changes / Unhandled exceptions from a BackgroundService](https://docs.microsoft.com/en-us/dotnet/core/compatibility/core-libraries/6.0/hosting-exception-handling):
@@ -50,51 +50,10 @@ This library used to contain exception handling code in a base service, which is
 
 With the [retirement of .NET 5 on May 8, 2022](https://docs.microsoft.com/en-us/lifecycle/products/microsoft-net-and-net-core), this WindowsServiceExtensions library target .NET (Platform Extensions) 6 going forward from v3.0.0.
 
-## Power events
-If you let your service inherit `CodeCaster.WindowsServiceExtensions.Service.PowerEventAwareBackgroundService` instead of [`Microsoft.Extensions.Hosting.BackgroundService`](https://docs.microsoft.com/en-us/dotnet/api/microsoft.extensions.hosting.backgroundservice?view=dotnet-plat-ext-5.0) (the former indirectly inherits the latter, see above), you get a new method:
-
-```C#
-public class MyCoolBackgroundService : PowerEventAwareBackgroundService
-{
-    // This still runs your long-running background job
-    protected override Task TryExecuteAsync(CancellationToken stoppingToken)
-    {
-        // Do your continuous or periodic background work.
-        await SomeLongRunningTaskAsync();
-
-        // We're done, let the service stop.
-        ApplicationLifetime.StopApplication();
-    }
-
-    // This one tells you when we're shutting down or resuming from semi-hibernation
-    public override void OnPowerEvent(PowerBroadcastStatus powerStatus)
-    {
-        _logger.LogDebug("OnPowerEvent: {powerStatus}", powerStatus);
-
-        if (powerStatus == PowerBroadcastStatus.Suspend)
-        {
-            _thingYoureRunning.Suspend();
-        }
-
-        if (powerStatus.In(PowerBroadcastStatus.ResumeSuspend, PowerBroadcastStatus.ResumeAutomatic))
-        {
-            _thingYoureRunning.Resume();
-        }
-    }
-}
-```
-
-You might receive multiple `OnPowerEvent()` calls in succession, be sure to lock and/or debounce where appropriate.
-
-**TODO**: we can do that.
-
-Do note that the statuses received can vary. You get either `ResumeSuspend`, `ResumeAutomatic` or both, never neither, after a machine wake, reboot or boot.
-
-
 ## Host Builder (dependency injection)
-To receive power events, call `UseWindowsServiceExtensions()` on your Host Builder:
+To receive session or power events, call `UseWindowsServiceExtensions()` on your Host Builder:
 
-```C#
+```csharp
 using CodeCaster.WindowsServiceExtensions;
 
 // ...
@@ -110,6 +69,59 @@ var hostBuilder = new HostBuilder()
     .UseWindowsServiceExtensions();
 ```
 
+## Events
+If you let your service inherit `CodeCaster.WindowsServiceExtensions.Service.WindowsServiceBackgroundService` instead of [`Microsoft.Extensions.Hosting.BackgroundService`](https://docs.microsoft.com/en-us/dotnet/api/microsoft.extensions.hosting.backgroundservice?view=dotnet-plat-ext-5.0) (the former indirectly inherits the latter, see above), you get two new methods:
+
+```csharp
+public class MyCoolBackgroundService : WindowsServiceBackgroundService
+{
+    // This still runs your long-running background job
+    protected override Task TryExecuteAsync(CancellationToken stoppingToken)
+    {
+        // Do your continuous or periodic background work.
+        await SomeLongRunningTaskAsync();
+
+        // We're done, let the service stop.
+        ApplicationLifetime.StopApplication();
+    }
+
+    // This one tells you when we're shutting down or resuming from semi-hibernation
+    public override void OnPowerEvent(PowerBroadcastStatus powerStatus)
+    {
+        // The lifetime will log "OnPowerEvent: {powerStatus}"
+
+        if (powerStatus == PowerBroadcastStatus.Suspend)
+        {
+            // Cancel a request, flush a cache, ...
+            _thingYoureRunning.Suspend();
+        }
+
+        if (powerStatus.In(PowerBroadcastStatus.ResumeSuspend, PowerBroadcastStatus.ResumeAutomatic))
+        {
+            // Trigger some tokens to continue work...
+            _thingYoureRunning.Resume();
+        }
+    }
+
+    // 
+    public override void OnSessionChange(SessionChangeDescription changeDescription)
+    {
+        // The lifetime will log "OnSessionChange: {changeDescription.SessionId}, {changeDescription.Reason}"
+
+        if (changeDescription.Reason == SessionChangeReason.SessionLogon)
+        {
+            // Send a message to our notifier...
+            _thingYoureRunning.TryToNotifyUserApp();
+        }
+    }
+}
+```
+
+You might receive multiple `OnPowerEvent()`/`OnSessionChange()` calls in succession, be sure to lock and/or debounce where appropriate.
+
+**TODO**: we can do that.
+
+Do note that the statuses received can vary. You get either `ResumeSuspend`, `ResumeAutomatic` or both, never neither, after a machine wake, reboot or boot.
 
 ## TODO
 When the task returns, the host stays up. This might be a problem if you start multiple background services that should shut down the application when the last one has done its work.

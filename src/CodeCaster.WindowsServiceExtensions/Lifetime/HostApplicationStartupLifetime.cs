@@ -18,15 +18,19 @@ namespace CodeCaster.WindowsServiceExtensions.Lifetime
         private readonly ManualResetEventSlim _started = new();
 
         /// <summary>
-        /// Logs things to the configured logger(s) of the application calling us.
+        /// Logs things to the configured logger(s) of the calling application, using "Microsoft.Hosting.Lifetime" as channel.
         /// </summary>
         protected readonly ILogger Logger;
+
+        /// <summary>
+        /// The host environment.
+        /// </summary>
+        protected readonly IHostEnvironment Environment;
 
         /// <summary>
         /// Manipulate the container after it's built. Use only from <see cref="ConfigureLifetimeAsync"/>.
         /// </summary>
         protected readonly IServiceProvider ServiceProvider;
-
         /// <summary>
         /// Application lifetime. Probably shouldn't touch.
         /// </summary>
@@ -36,9 +40,11 @@ namespace CodeCaster.WindowsServiceExtensions.Lifetime
         public HostApplicationStartupLifetime(IServiceProvider serviceProvider, IHostEnvironment environment, IHostApplicationLifetime applicationLifetime, ILoggerFactory loggerFactory, IOptions<HostOptions> optionsAccessor)
             : base(environment, applicationLifetime, loggerFactory, optionsAccessor)
         {
-            Logger = loggerFactory.CreateLogger(typeof(PowerEventAwareWindowsServiceLifetime).FullName ?? nameof(PowerEventAwareWindowsServiceLifetime));
-            ApplicationLifetime = applicationLifetime;
+            Logger = loggerFactory.CreateLogger("Microsoft.Hosting.Lifetime");
+
+            Environment = environment;
             ServiceProvider = serviceProvider;
+            ApplicationLifetime = applicationLifetime;
         }
 
         /// <inheritdoc />
@@ -104,6 +110,7 @@ namespace CodeCaster.WindowsServiceExtensions.Lifetime
         {
             if (disposing)
             {
+                // When we get disposed, cancel whatever we were waiting for to start.
                 _starting.Dispose();
                 _started.Set();
             }

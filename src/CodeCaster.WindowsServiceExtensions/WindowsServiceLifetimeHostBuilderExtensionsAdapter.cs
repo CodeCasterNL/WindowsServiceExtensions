@@ -5,15 +5,16 @@ using System;
 using System.Linq;
 using CodeCaster.WindowsServiceExtensions.Lifetime;
 
+// ReSharper disable MemberCanBePrivate.Global - public API
 namespace CodeCaster.WindowsServiceExtensions
 {
     /// <summary>
-    /// Extension method for setting up <see cref="PowerEventAwareWindowsServiceLifetime"/>.
+    /// Extension method for setting up <see cref="ExtendedWindowsServiceLifetime"/>.
     /// </summary>
     public static class WindowsServiceLifetimeHostBuilderExtensionsAdapter
     {
         /// <summary>
-        /// Sets the host lifetime to <see cref="PowerEventAwareWindowsServiceLifetime"/> and does whatever <see cref="WindowsServiceLifetimeHostBuilderExtensions.UseWindowsService(IHostBuilder)"/> does.
+        /// Sets the host lifetime to <see cref="ExtendedWindowsServiceLifetime"/> and does whatever <see cref="WindowsServiceLifetimeHostBuilderExtensions.UseWindowsService(IHostBuilder)"/> does.
         /// </summary>
         /// <param name="hostBuilder">The Microsoft.Extensions.Hosting.IHostBuilder to operate on.</param>
         /// <returns>The same instance of the Microsoft.Extensions.Hosting.IHostBuilder for chaining.</returns>
@@ -24,7 +25,7 @@ namespace CodeCaster.WindowsServiceExtensions
         }
 
         /// <summary>
-        /// Sets the host lifetime to <see cref="PowerEventAwareWindowsServiceLifetime"/> and does whatever <see cref="WindowsServiceLifetimeHostBuilderExtensions.UseWindowsService(IHostBuilder)"/> does.
+        /// Sets the host lifetime to <see cref="ExtendedWindowsServiceLifetime"/> and does whatever <see cref="WindowsServiceLifetimeHostBuilderExtensions.UseWindowsService(IHostBuilder)"/> does.
         /// </summary>
         /// <param name="hostBuilder">The Microsoft.Extensions.Hosting.IHostBuilder to operate on.</param>
         /// <param name="configure">An action to configure the lifetime's options.</param>
@@ -46,11 +47,11 @@ namespace CodeCaster.WindowsServiceExtensions
                 var lifetime = services.FirstOrDefault(s => s.ImplementationType == typeof(WindowsServiceLifetime));
                 if (lifetime == null)
                 {
-                    throw new InvalidOperationException($"Expecting a registration of type {typeof(WindowsServiceLifetime).FullName}, did .NET do a breaking change?");
+                    throw new InvalidOperationException($"Expecting a registration of type {typeof(WindowsServiceLifetime).FullName}, did .NET Platform Extensions (Microsoft.Extensions.Hosting.Abstractions)'s .UseWindowsService() do a breaking change?");
                 }
                 
                 services.Remove(lifetime);
-                services.AddSingleton<IHostLifetime, PowerEventAwareWindowsServiceLifetime>();
+                services.AddSingleton<IHostLifetime, ExtendedWindowsServiceLifetime>();
             });
         }
     }

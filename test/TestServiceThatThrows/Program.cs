@@ -70,17 +70,17 @@ namespace TestServiceThatThrows
         }
     }
 
-    public class MyHostTerminatingPowerEventAwareBackgroundService : PowerEventAwareBackgroundService
+    public class MyFaultyWindowsServiceBackgroundService : WindowsServiceBackgroundService
     {
-        private readonly ILogger<MyHostTerminatingPowerEventAwareBackgroundService> _logger;
+        private readonly ILogger<MyFaultyWindowsServiceBackgroundService> _logger;
 
-        public MyHostTerminatingPowerEventAwareBackgroundService(ILogger<MyHostTerminatingPowerEventAwareBackgroundService> logger, IHostApplicationLifetime applicationLifetime)
+        public MyFaultyWindowsServiceBackgroundService(ILogger<MyFaultyWindowsServiceBackgroundService> logger, IHostApplicationLifetime applicationLifetime)
             : base(logger, applicationLifetime)
         {
             _logger = logger;
         }
 
-        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+        protected override async Task TryExecuteAsync(CancellationToken stoppingToken)
         {
             _logger.LogInformation("Sleeping, then throwing");
             
@@ -152,17 +152,19 @@ namespace TestServiceThatThrows
                     // This one breaks in OnStart().
                     //s.AddHostedService<MyFaultyService>();
 
-                    // This one throws after 500ms but doesn't take down the host.
+                    // This one throws after 500ms and should take down the host (.NET PE 6+).
                     //s.AddHostedService<MyFaultyBackgroundService>();
 
                     // This one should stop the application.
-                    //s.AddHostedService<MyHostTerminatingBackgroundService>();
-                    s.AddHostedService<MyHostTerminatingPowerEventAwareBackgroundService>();
+                    //s.AddHostedService<MyWindowsServiceBackgroundService>();
                     
                     //throw new InvalidOperationException("Heh");
                 })
                 //.UseWindowsService()
-                .UseWindowsServiceExtensions()
+                .UseWindowsServiceExtensions(o =>
+                {
+                    //o.ServiceName = ...
+                })
                 .Build()
                 .RunAsync();
         }
