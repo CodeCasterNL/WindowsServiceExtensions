@@ -1,6 +1,4 @@
 ---
-layout: default
-published: true
 title: GitHub Markdown Demo Page
 order: 99
 ---

@@ -1,7 +1,5 @@
 ﻿---
-layout: default
-published: true
-title: CodeCaster.WindowsServiceExtensions
+title: Documentation Home
 order: 1
 ---
 # Windows Service Extensions
@@ -9,7 +7,7 @@ This package is relevant to developers who want to write reliable background tas
 
 This is meant as a utility library that glues BackgroundServices and Windows Services together.
 
-**NOTE**: these docs are currently for the develop branch. Once the according version is released, it'll be from main.
+**NOTE**: these docs are currently for the develop branch. Once the according version v3.0.0 is released, it'll be from main.
 
 ## Installation
 Through [NuGet](https://www.nuget.org/packages/CodeCaster.WindowsServiceExtensions/):
@@ -54,7 +52,7 @@ This library used to contain exception handling code in a base service, which is
 
 > In previous versions, when a BackgroundService throws an unhandled exception, the exception is lost and the service appears unresponsive. .NET 6 fixes this behavior by logging the exception and stopping the host.
 
-With the [retirement of .NET 5 on May 8, 2022](https://docs.microsoft.com/en-us/lifecycle/products/microsoft-net-and-net-core), this WindowsServiceExtensions library target .NET (Platform Extensions) 6 going forward from v3.0.0.
+With the [retirement of .NET 5 on May 8, 2022](https://docs.microsoft.com/en-us/lifecycle/products/microsoft-net-and-net-core), this WindowsServiceExtensions library targets .NET (Platform Extensions) 6 going forward from v3.0.0.
 
 ## Host Builder (dependency injection)
 To receive session or power events, call `UseWindowsServiceExtensions()` on your Host Builder:
@@ -131,7 +129,3 @@ Do note that the statuses received can vary. You get either `ResumeSuspend`, `Re
 
 ## TODO
 When the task returns, the host stays up. This might be a problem if you start multiple background services that should shut down the application when the last one has done its work.
-
-## Docs demo
-
-[See docs demo](demo)

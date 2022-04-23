@@ -1,10 +1,8 @@
 ﻿---
-layout: default
-published: true
-title: GitHub Markdown Demo Page
+title: Upgrading from v2 to v3
 order: 2
 ---
-# Upgrading from v2 to v3
+# Upgrade Guide
 
 **TODO**: explain this, taken from root Readme.md.
 
