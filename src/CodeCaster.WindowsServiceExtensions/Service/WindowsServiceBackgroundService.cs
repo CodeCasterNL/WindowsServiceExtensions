@@ -47,7 +47,7 @@ namespace CodeCaster.WindowsServiceExtensions.Service
         /// <summary>
         /// Overridden and sealed from <see cref="BackgroundService.ExecuteAsync "/> to set the exit code on exception.
         /// </summary>
-        protected override Task ExecuteAsync(CancellationToken stoppingToken)
+        protected sealed override Task ExecuteAsync(CancellationToken stoppingToken)
         {
             try
             {
@@ -59,10 +59,13 @@ namespace CodeCaster.WindowsServiceExtensions.Service
             {
                 // The host will shut down with code 0 if we don't do this.
                 const int exitCode = -1;
-                
+
                 Logger.LogWarning("Setting exit code to {exitCode}", exitCode);
-                
+
                 Environment.ExitCode = exitCode;
+
+                // TODO: the above does not work, returns 0 on console. Does Environment.Exit(-1) work and still log to the event log?
+                Environment.Exit(-1);
 
                 // Let the WindowsServiceLifetime handle the exception.
                 throw;

@@ -9,9 +9,23 @@ The Lifetime classes also include [kmcclellan's fixes](https://github.com/dotnet
 Through [NuGet](https://www.nuget.org/packages/CodeCaster.WindowsServiceExtensions/):
 
     > Install-Package CodeCaster.WindowsServiceExtensions
+    
+## Documentation
+For examples and more specific documentation, see https://codecasternl.github.io/WindowsServiceExtensions/.
+
+## Upgrading from v2 to v3
+If you're one of the souls that use this library (who _are_ you?), you'll want to upgrade to v3.0 after upgrading your projects to .NET 6. 
+
+Changes:
+
+* The DI extension method `IHostBuilder.UsePowerEventAwareWindowsService()` is now called `UseWindowsServiceExtensions()` because we do more than power events now.
+* The long-running hosted service base class `CodeCaster.WindowsServiceExtensions.PowerEventAwareBackgroundService` was renamed to `CodeCaster.WindowsServiceExtensions.Service.WindowsServiceBackgroundService`, because the former didn't have enough "Service" in its name.
+* Instead of `BackgroundService.ExecuteAsync()`, which is now sealed, override `WindowsServiceBackgroundService.TryExecuteAsync()` to do your long-running work.
+
+Extended upgrading docs: see https://codecasternl.github.io/WindowsServiceExtensions/upgrading-v2-v3.
 
 ## Usage
-These methods from this package allow your IHostedServices to respond to this power state change:
+These methods from this package allow your `IHostedService`s to respond to Windows Service events relating to sessions (user logon/logoff) and power state (shutdown/hibernate/resume):
 
 * On your Host Builder, call `UseWindowsServiceExtensions()` instead of [`UseWindowsService()`](https://docs.microsoft.com/en-us/dotnet/api/microsoft.extensions.hosting.windowsservicelifetimehostbuilderextensions.usewindowsservice?view=dotnet-plat-ext-3.1).
 * Instead of letting your service inherit [`Microsoft.Extensions.Hosting.BackgroundService`](https://docs.microsoft.com/en-us/dotnet/api/microsoft.extensions.hosting.backgroundservice?view=dotnet-plat-ext-5.0), inherit from `CodeCaster.WindowsServiceExtensions.WindowsServiceBackgroundService`.
@@ -19,6 +33,3 @@ These methods from this package allow your IHostedServices to respond to this po
 * Implement the method `public override bool OnSessionChange(SessionChangeDescription changeDescription) { ... }` and do your thing when it's called with a certain status.
 
 Do note that the statuses received can vary. You get either `ResumeSuspend`, `ResumeAutomatic` or both reported to `OnPowerEvent()`, never neither, after a machine wake, reboot or boot.
-
-## Documentation
-For examples and more specific documentation, see https://codecasternl.github.io/WindowsServiceExtensions/.

@@ -1,4 +1,10 @@
-﻿# Windows Service Extensions
+﻿---
+layout: default
+published: true
+title: CodeCaster.WindowsServiceExtensions
+order: 1
+---
+# Windows Service Extensions
 This package is relevant to developers who want to write reliable background tasks running under a Windows Service. The .NET BackgroundService is nice, but is abstracted away from a Windows Service, because it's not designed to be one.
 
 This is meant as a utility library that glues BackgroundServices and Windows Services together.
@@ -86,7 +92,7 @@ public class MyCoolBackgroundService : WindowsServiceBackgroundService
     }
 
     // This one tells you when we're shutting down or resuming from semi-hibernation
-    public override void OnPowerEvent(PowerBroadcastStatus powerStatus)
+    protected override void OnPowerEvent(PowerBroadcastStatus powerStatus)
     {
         // The lifetime will log "OnPowerEvent: {powerStatus}"
 
@@ -103,8 +109,8 @@ public class MyCoolBackgroundService : WindowsServiceBackgroundService
         }
     }
 
-    // 
-    public override void OnSessionChange(SessionChangeDescription changeDescription)
+    // React to logon/logoff/...
+    protected override void OnSessionChange(SessionChangeDescription changeDescription)
     {
         // The lifetime will log "OnSessionChange: {changeDescription.SessionId}, {changeDescription.Reason}"
 

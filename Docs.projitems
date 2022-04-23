@@ -9,8 +9,10 @@
     <Import_RootNamespace>Docs</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <None Include="$(MSBuildThisFileDirectory)docs\demo.md" />
-    <None Include="$(MSBuildThisFileDirectory)docs\_config.yml" />
+    <Content Include="$(MSBuildThisFileDirectory)docs\upgrading-v2-v3.md" />
+    <Content Include="$(MSBuildThisFileDirectory)docs\_layouts\cayman-with-menu.html" />
+    <Content Include="$(MSBuildThisFileDirectory)docs\demo.md" />
+    <Content Include="$(MSBuildThisFileDirectory)docs\_config.yml" />
     <Content Include="$(MSBuildThisFileDirectory)docs\index.md" />
   </ItemGroup>
 </Project>
