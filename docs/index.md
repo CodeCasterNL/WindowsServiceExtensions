@@ -6,9 +6,9 @@ order: 1
 # Windows Service Extensions
 This package is relevant to developers who want to write reliable background tasks running under a Windows Service. The .NET BackgroundService is nice, but is abstracted away from a Windows Service, because it's not designed to be one.
 
-This is meant as a utility library that glues BackgroundServices and Windows Services together.
+Running as a _Windows Service_ and _running BackgroundServices_ are two separate things though, and they are not connected in any way. A non-service console app can run background services, and so can and do web applications. Each of those are different hosting environments, with their own lifetimes.
 
-**NOTE**: these docs are currently for the develop branch. Once the according version v3.0.0 is released, it'll be from main.
+This project exists of a few classes that make building reliable Windows Services easier, to gap this disconnect. 
 
 ## Installation
 Through [NuGet](https://www.nuget.org/packages/CodeCaster.WindowsServiceExtensions/):
@@ -16,7 +16,7 @@ Through [NuGet](https://www.nuget.org/packages/CodeCaster.WindowsServiceExtensio
     > Install-Package CodeCaster.WindowsServiceExtensions
 
 ## Why should you use this?
-A usual Windows Service program might look like this:
+Using .NET's [`UseWindowsService()`](https://docs.microsoft.com/en-us/dotnet/api/microsoft.extensions.hosting.windowsservicelifetimehostbuilderextensions.usewindowsservice?view=dotnet-plat-ext-6.0) (from the Platform Extensions package `Microsoft.Extensions.Hosting.WindowsServices`) and [`Microsoft.Extensions.Hosting.BackgroundService`](https://docs.microsoft.com/en-us/dotnet/api/microsoft.extensions.hosting.backgroundservice?view=dotnet-plat-ext-6.0) from `Microsoft.Extensions.Hosting.Abstractions`, a usual Windows Service program hosting some long-running background tasks could look like this:
 
 ```csharp
 var hostBuilder = new HostBuilder()
@@ -25,6 +25,7 @@ var hostBuilder = new HostBuilder()
     {
         // Add our IHostedService
         s.AddHostedService<MyCoolBackgroundService>();
+        s.AddHostedService<MyShortRunningBackgroundService>();
     })
     .UseWindowsService();
 
@@ -33,14 +34,14 @@ var host = hostBuilder.Build;
 await host.RunAsync();
 ```
 
-And then your service would look like this:
+And then a service would look like this:
 
 ```csharp
 public class MyCoolBackgroundService : BackgroundService
 {
     protected override Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        // Do your continuous or periodic background work.
+        // Do your continuous or periodic background work, or just a short task and return.
         await SomeLongRunningTaskAsync();
     }
 }
@@ -54,6 +55,8 @@ This library used to contain exception handling code in a base service, which is
 > In previous versions, when a BackgroundService throws an unhandled exception, the exception is lost and the service appears unresponsive. .NET 6 fixes this behavior by logging the exception and stopping the host.
 
 With the [retirement of .NET 5 on May 8, 2022](https://docs.microsoft.com/en-us/lifecycle/products/microsoft-net-and-net-core), this WindowsServiceExtensions library targets .NET (Platform Extensions) 6 going forward from v3.0.0.
+
+However, in the case of a background service excption, the service doesn't report an error to the Service Control Manager, who will think the process exited nicely. This library fixes that.
 
 ## Host Builder (dependency injection)
 To receive session or power events, call `UseWindowsServiceExtensions()` on your Host Builder:
@@ -75,7 +78,7 @@ var hostBuilder = new HostBuilder()
 ```
 
 ## Events
-If you let your service inherit `CodeCaster.WindowsServiceExtensions.Service.WindowsServiceBackgroundService` instead of [`Microsoft.Extensions.Hosting.BackgroundService`](https://docs.microsoft.com/en-us/dotnet/api/microsoft.extensions.hosting.backgroundservice?view=dotnet-plat-ext-5.0) (the former indirectly inherits the latter, see above), you get two new methods:
+If you let your service inherit `CodeCaster.WindowsServiceExtensions.Service.WindowsServiceBackgroundService` (or implement `IWindowsServiceAwareHostedService`) instead of [`Microsoft.Extensions.Hosting.BackgroundService`](https://docs.microsoft.com/en-us/dotnet/api/microsoft.extensions.hosting.backgroundservice?view=dotnet-plat-ext-5.0) (the former indirectly inherits the latter, see above), you get two new methods:
 
 ```csharp
 public class MyCoolBackgroundService : WindowsServiceBackgroundService
@@ -136,9 +139,4 @@ public class MyCoolBackgroundService : WindowsServiceBackgroundService
 
 You might receive multiple `OnPowerEvent()`/`OnSessionChange()` calls in succession, be sure to lock and/or debounce where appropriate.
 
-**TODO**: we can do that.
-
 Do note that the statuses received can vary. You get either `ResumeSuspend`, `ResumeAutomatic` or both, never neither, after a machine wake, reboot or boot.
-
-## TODO
-When the task returns, the host stays up. This might be a problem if you start multiple background services that should shut down the application when the last one has done its work.

@@ -10,6 +10,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Content Include="$(MSBuildThisFileDirectory)docs\downloads.md" />
+    <Content Include="$(MSBuildThisFileDirectory)docs\roadmap.md" />
     <Content Include="$(MSBuildThisFileDirectory)docs\upgrading-v2-v3.md" />
     <Content Include="$(MSBuildThisFileDirectory)docs\_layouts\cayman-with-menu.html" />
     <Content Include="$(MSBuildThisFileDirectory)docs\_config.yml" />

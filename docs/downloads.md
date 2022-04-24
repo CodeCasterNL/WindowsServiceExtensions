@@ -1,6 +1,6 @@
 ---
 title: Downloads
-order: 3
+order: 4
 ---
 ## Get it now on NuGet
 Through [NuGet](https://www.nuget.org/packages/CodeCaster.WindowsServiceExtensions/):
