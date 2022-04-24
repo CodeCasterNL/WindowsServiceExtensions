@@ -14,9 +14,10 @@ namespace TestServiceThatThrows
     {
         public static async Task Main()
         {
+            // Hint: Reattach to Process (Shift+Alt+P)
             if (!Debugger.IsAttached)
             {
-                Console.WriteLine("Waiting 5s for debugger to be attached...");
+                Console.WriteLine("Waiting 5s for debugger to be attached and pretending the service starts up slowly...");
                 Thread.Sleep(5000);
                 Debugger.Break();
             }
@@ -28,9 +29,9 @@ namespace TestServiceThatThrows
                     // Services to run are defined below.
 
                     // These three run successfully.
-                    s.AddHostedService<MyHappyService>();
-                    s.AddHostedService<MyHappyBackgroundService>();
-                    s.AddHostedService<QuicklyQuittingBackgroundService>();
+                    //s.AddHostedService<MyHappyService>();
+                    //s.AddHostedService<MyHappyBackgroundService>();
+                    //s.AddHostedService<QuicklyQuittingBackgroundService>();
 
                     // This one breaks in OnStart() (should give startup error).
                     //s.AddHostedService<MyFaultyService>();
@@ -44,11 +45,12 @@ namespace TestServiceThatThrows
                     // Should give startup error.
                     //throw new InvalidOperationException("Heh");
                 })
-                //.UseWindowsService()
-                .UseWindowsServiceExtensions(o =>
-                {
-                    //o.ServiceName = ...
-                })
+                .UseWindowsService()
+                .UseWindowsServiceExtensions()
+                //.UseWindowsServiceExtensions(o => 
+                //{
+                //    //o.ServiceName = ...
+                //})
                 .Build()
                 .RunAsync();
         }

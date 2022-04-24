@@ -51,6 +51,7 @@ namespace CodeCaster.WindowsServiceExtensions.Lifetime
         public new async Task WaitForStartAsync(CancellationToken cancellationToken)
         {
             Logger.LogInformation("Windows Service start requested");
+
             ApplicationLifetime.ApplicationStarted.Register(() => _started.Set());
 
             try
@@ -91,11 +92,11 @@ namespace CodeCaster.WindowsServiceExtensions.Lifetime
             _started.Wait(ApplicationLifetime.ApplicationStopping);
 
             // This can happen very early in the startup process (even before ApplicationStopping is cancelled), so this may not be logged nor reported at all,
-            // because the DI isn't complete and the logger (file, event log, ...) not available while we're being disposed.
+            // because the DI isn't complete and the logger (file, event log, ...) not available while we're being disposed. Probably corrupt config file?
             if (!ApplicationLifetime.ApplicationStarted.IsCancellationRequested)
             {
                 const string errorString = "Windows Service failed to start: some part reported it started, the other didn't";
-                
+
                 Logger.LogError(errorString);
 
                 // Prevent the service from happily reporting successful startup, while the .NET Core ApplicationHost isn't started at all.

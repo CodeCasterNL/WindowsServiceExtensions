@@ -31,6 +31,10 @@ namespace CodeCaster.WindowsServiceExtensions.Lifetime
                 throw new PlatformNotSupportedException($"Windows Service needs to run on Windows. Remove the call to {methodName}()");
             }
 
+            // Explicitly stop the service instead of just exiting the process.
+            // But this this will kill the application quickly, do other BackgroundServices get the time to exit nicely?
+            applicationLifetime.ApplicationStopping.Register(Stop);
+
             CanHandlePowerEvent = true;
             CanHandleSessionChangeEvent = true;
         }
