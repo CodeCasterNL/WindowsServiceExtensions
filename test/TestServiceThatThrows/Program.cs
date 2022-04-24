@@ -120,19 +120,20 @@ namespace TestServiceThatThrows
     {
         public MyFaultyWindowsServiceBackgroundService(
             ILogger<MyFaultyWindowsServiceBackgroundService> logger,
-            IHostLifetime hostLifetime,
-            IHostApplicationLifetime applicationLifetime
+            IHostLifetime hostLifetime
         )
-            : base(logger, hostLifetime, applicationLifetime)
+            : base(logger, hostLifetime)
         {
         }
 
         protected override async Task TryExecuteAsync(CancellationToken stoppingToken)
         {
             Logger.LogInformation("Sleeping, then throwing");
-            
-            // Fake doing at least some work...
-            await Task.Delay(1000, stoppingToken);
+
+            // Fake doing at least a second's work to not throw immediately...
+            int secondsToWait = Debugger.IsAttached ? 1 : 31;
+
+            await Task.Delay(secondsToWait * 1000, stoppingToken);
 
             // This will now stop the host application.
             throw new InvalidOperationException("This service is not supposed to start");

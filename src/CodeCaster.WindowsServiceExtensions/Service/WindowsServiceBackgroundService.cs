@@ -24,26 +24,18 @@ namespace CodeCaster.WindowsServiceExtensions.Service
         /// </summary>
         protected readonly ILogger<IHostedService> Logger;
 
+#pragma warning disable CS0419, CS1574 // Ambiguous reference in cref attribute
         /// <summary>
-        /// To interact with the Service Control Manager.
+        /// To interact with the Service Control Manager. <c>null</c> when <see cref="WindowsServiceLifetimeHostBuilderExtensionsAdapter.UseWindowsServiceExtensions"/> wasn't called. 
         /// </summary>
+#pragma warning restore CS0419, CS1574 // Ambiguous reference in cref attribute
         protected readonly ExtendedWindowsServiceLifetime? ServiceLifetime;
 
-        /// <summary>
-        /// To ask nicely to stop the host when cancellation is requested. We're just a BackgroundService, returning from ExecuteAsync() won't stop the host application. Better us than Windows.
-        /// </summary>
-        protected readonly IHostApplicationLifetime ApplicationLifetime;
-
         /// <inheritdoc />
-        protected WindowsServiceBackgroundService(
-            ILogger<IHostedService> logger,
-            IHostLifetime hostLifetime,
-            IHostApplicationLifetime applicationLifetime
-        )
+        protected WindowsServiceBackgroundService(ILogger<IHostedService> logger, IHostLifetime hostLifetime)
         {
             Logger = logger;
             ServiceLifetime = hostLifetime as ExtendedWindowsServiceLifetime;
-            ApplicationLifetime = applicationLifetime;
         }
 
         /// <summary>
@@ -75,7 +67,7 @@ namespace CodeCaster.WindowsServiceExtensions.Service
             {
                 Logger.LogDebug("Setting process exit code to {exitCode}", ErrorInvalidData);
 
-                // The host will shut down with code 0 if we don't do this.
+                // The .NET host will shut down with code 0 if we don't do this.
                 Environment.ExitCode = ErrorInvalidData;
 
 #pragma warning disable CA1416 // Validate platform compatibility - we are a Windows Service.

@@ -82,22 +82,24 @@ public class MyCoolBackgroundService : WindowsServiceBackgroundService
 {
     public MyCoolBackgroundService(
         ILogger<MyFaultyWindowsServiceBackgroundService> logger,
-        IHostLifetime hostLifetime,
-        IHostApplicationLifetime applicationLifetime
+        IHostLifetime hostLifetime
     )
-        : base(logger, hostLifetime, applicationLifetime)
+        : base(logger, hostLifetime)
     {
     }
 
     // This still runs your long-running background job
-    protected override Task TryExecuteAsync(CancellationToken stoppingToken)
+    protected override async Task TryExecuteAsync(CancellationToken stoppingToken)
     {
         // Do your continuous or periodic background work.
         await SomeLongRunningTaskAsync();
 
         // We're done, let the service stop.
         ServiceLifetime.ExitCode = 0;
-        ApplicationLifetime.StopApplication();
+
+        // This kills the process about immediately, you can also inject `IHostApplication` 
+        // and call StopAsync() on that.
+        await ServiceLifetime.StopAsync();
     }
 
     // This one tells you when we're shutting down or resuming from semi-hibernation
