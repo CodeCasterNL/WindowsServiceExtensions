@@ -24,6 +24,7 @@ namespace CodeCaster.WindowsServiceExtensions.Lifetime
             : base(serviceProvider, environment, applicationLifetime, loggerFactory, optionsAccessor)
         {
             // Should not happen, here to keep the code analysis happy and the intention explicit.
+#pragma warning disable CA1416 // Validate platform compatibility
             if (!OperatingSystem.IsWindows() || !WindowsServiceHelpers.IsWindowsService())
             {
                 const string methodName = nameof(WindowsServiceLifetimeHostBuilderExtensionsAdapter.UseWindowsServiceExtensions);
@@ -33,13 +34,17 @@ namespace CodeCaster.WindowsServiceExtensions.Lifetime
 
             // Explicitly stop the service instead of just exiting the process.
             // But this this will kill the application quickly, do other BackgroundServices get the time to exit nicely?
-            applicationLifetime.ApplicationStopping.Register(Stop);
+            applicationLifetime.ApplicationStopping.Register(() =>
+            {
+                Logger.LogInformation("Application stopping, stopping service, exit code: {exitCode}", ExitCode);
+                
+                Stop();
+            });
 
             CanHandlePowerEvent = true;
             CanHandleSessionChangeEvent = true;
         }
 
-#pragma warning disable CA1416 // Validate platform compatibility - constructor handles that
         /// <summary>
         /// Store a copy of all registered <see cref="IHostedService"/>s that implement our interface
         /// </summary>

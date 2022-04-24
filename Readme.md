@@ -10,7 +10,7 @@ The following improvements are included in this library:
 
 * `OnStart()` can fail because of invalid service configuration, quit the application when that happens (by [kmcclellan](https://github.com/dotnet/runtime/issues/50019#issuecomment-678658133)).
 * On consumer OS Windows 10+, shutting down the computer will actually hibernate the OS. Services won't get another `OnStart()` call when the computer starts again, nor will your background services be notified. Now they will.
-* This library makes an `IHostedService` running inside a .NET Windows Service that aware of the user logging in and out, and the computer shutting down and starting up.
+* It also can notify your BackgroundServices about user session changes, i.e. logon, logoff and others.
 * When an exception occurs during your BackgroundService's lifetime, .NET Platform Extensions < 6 didn't stop the application host. Now it does, but it doesn't report an error to the Service Control Manager. With this extension, it does, as well as setting a process exit code: 13 in both cases ("invalid data").
 
 ## Installation
