@@ -20,13 +20,13 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: 5.0.x
+        dotnet-version: 6.0.x
 
     - name: Restore dependencies
-      run: dotnet restore
+      run: dotnet restore CodeCaster.WindowsServiceExtensions.sln
 
     - name: Build
-      run: dotnet build --no-restore --configuration=Release -p:Version=${{ steps.git_version.outputs.version-without-v }}
+      run: dotnet build CodeCaster.WindowsServiceExtensions.sln --no-restore --configuration=Release -p:Version=${{ steps.git_version.outputs.version-without-v }}
   
     - name: Release to GitHub
       uses: softprops/action-gh-release@v1
