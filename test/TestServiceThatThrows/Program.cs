@@ -12,6 +12,9 @@ namespace TestServiceThatThrows
 {
     public static class Program
     {
+        // Fake doing at least a second's work to not throw immediately...
+        public static int SecondsToWaitBeforeThrowing;
+
         public static async Task Main()
         {
             // Hint: Reattach to Process (Shift+Alt+P)
@@ -21,6 +24,8 @@ namespace TestServiceThatThrows
                 Thread.Sleep(5000);
                 Debugger.Break();
             }
+
+            SecondsToWaitBeforeThrowing = Debugger.IsAttached ? 1 : 31;
 
             await new HostBuilder()
                 .ConfigureLogging(l => l.AddConsole())
@@ -45,7 +50,7 @@ namespace TestServiceThatThrows
                     // Should give startup error.
                     //throw new InvalidOperationException("Heh");
                 })
-                .UseWindowsService()
+                //.UseWindowsService()
                 .UseWindowsServiceExtensions()
                 //.UseWindowsServiceExtensions(o => 
                 //{
@@ -83,7 +88,7 @@ namespace TestServiceThatThrows
     {
         public async Task StartAsync(CancellationToken cancellationToken)
         {
-            await Task.Delay(5000, cancellationToken);
+            await Task.Delay(Program.SecondsToWaitBeforeThrowing * 1000, cancellationToken);
 
             // This works, kills the host (awaits startup).
             throw new InvalidOperationException("This service is not supposed to start");
@@ -107,7 +112,7 @@ namespace TestServiceThatThrows
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             // Fake doing at least some work...
-            await Task.Delay(500, stoppingToken);
+            await Task.Delay(Program.SecondsToWaitBeforeThrowing * 1000, stoppingToken);
 
             _logger.LogError("This service is not supposed to start, but this error won't kill the host");
 
@@ -130,10 +135,7 @@ namespace TestServiceThatThrows
         {
             Logger.LogInformation("Sleeping, then throwing");
 
-            // Fake doing at least a second's work to not throw immediately...
-            int secondsToWait = Debugger.IsAttached ? 1 : 31;
-
-            await Task.Delay(secondsToWait * 1000, stoppingToken);
+            await Task.Delay(Program.SecondsToWaitBeforeThrowing * 1000, stoppingToken);
 
             // This will now stop the host application.
             throw new InvalidOperationException("This service is not supposed to start");

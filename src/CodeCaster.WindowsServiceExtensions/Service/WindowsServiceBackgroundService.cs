@@ -65,7 +65,7 @@ namespace CodeCaster.WindowsServiceExtensions.Service
             }
             catch (Exception)
             {
-                Logger.LogDebug("Setting process exit code to {exitCode}", ErrorInvalidData);
+                Logger.LogInformation("Exception occurred, setting process exit code to {exitCode}", ErrorInvalidData);
 
                 // The .NET host will shut down with code 0 if we don't do this.
                 Environment.ExitCode = ErrorInvalidData;
@@ -76,11 +76,12 @@ namespace CodeCaster.WindowsServiceExtensions.Service
                     Logger.LogDebug("Setting service exit code to {exitCode}", ErrorInvalidData);
 
                     // To report to the Service Control Manager on failure, is uint so > 0.
-                    ServiceLifetime.ExitCode = ErrorInvalidData;
+                    ServiceLifetime.ExitCode = ErrorInvalidData + 1;
                 }
 #pragma warning restore CA1416 // Validate platform compatibility
 
-                // Let the BackgroundService handle the exception.
+                // Let the BackgroundService handle and log the exception.
+                // Do _not_ call ServiceBase.Stop(), or it'll think we exited successfully.
                 throw;
             }
         }

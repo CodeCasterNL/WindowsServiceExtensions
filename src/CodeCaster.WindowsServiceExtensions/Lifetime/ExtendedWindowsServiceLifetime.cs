@@ -23,26 +23,11 @@ namespace CodeCaster.WindowsServiceExtensions.Lifetime
         public ExtendedWindowsServiceLifetime(IServiceProvider serviceProvider, IHostEnvironment environment, IHostApplicationLifetime applicationLifetime, ILoggerFactory loggerFactory, IOptions<HostOptions> optionsAccessor)
             : base(serviceProvider, environment, applicationLifetime, loggerFactory, optionsAccessor)
         {
-            // Should not happen, here to keep the code analysis happy and the intention explicit.
-#pragma warning disable CA1416 // Validate platform compatibility
-            if (!OperatingSystem.IsWindows() || !WindowsServiceHelpers.IsWindowsService())
+            if (OperatingSystem.IsWindows() && WindowsServiceHelpers.IsWindowsService())
             {
-                const string methodName = nameof(WindowsServiceLifetimeHostBuilderExtensionsAdapter.UseWindowsServiceExtensions);
-
-                throw new PlatformNotSupportedException($"Windows Service needs to run on Windows. Remove the call to {methodName}()");
+                CanHandlePowerEvent = true;
+                CanHandleSessionChangeEvent = true;
             }
-
-            // Explicitly stop the service instead of just exiting the process.
-            // But this this will kill the application quickly, do other BackgroundServices get the time to exit nicely?
-            applicationLifetime.ApplicationStopping.Register(() =>
-            {
-                Logger.LogInformation("Application stopping, stopping service, exit code: {exitCode}", ExitCode);
-                
-                Stop();
-            });
-
-            CanHandlePowerEvent = true;
-            CanHandleSessionChangeEvent = true;
         }
 
         /// <summary>
@@ -80,19 +65,19 @@ namespace CodeCaster.WindowsServiceExtensions.Lifetime
             if (_hostedServices == null)
             {
                 Logger.LogDebug("No hosted services, returning");
-                
+
                 return;
             }
 
             // Forward the event to all registered I(PowerEventAware)HostedServices.
             foreach (var service in _hostedServices)
             {
-                Logger.LogDebug("Notifying service {service} about session change event: {sessionId}, {reason}", 
-                    service.GetType().FullName, 
-                    changeDescription.SessionId, 
+                Logger.LogDebug("Notifying service {service} about session change event: {sessionId}, {reason}",
+                    service.GetType().FullName,
+                    changeDescription.SessionId,
                     changeDescription.Reason.ToString()
                 );
-                
+
                 service.OnSessionChange(changeDescription);
             }
         }
@@ -106,7 +91,7 @@ namespace CodeCaster.WindowsServiceExtensions.Lifetime
             if (_hostedServices == null)
             {
                 Logger.LogDebug("No hosted services, returning");
-                
+
                 return true;
             }
 
@@ -114,7 +99,7 @@ namespace CodeCaster.WindowsServiceExtensions.Lifetime
             foreach (var service in _hostedServices)
             {
                 Logger.LogDebug("Notifying service {service} about power event: {powerStatus}", service.GetType().FullName, powerStatus);
-                
+
                 service.OnPowerEvent(powerStatus);
             }
 
@@ -123,4 +108,3 @@ namespace CodeCaster.WindowsServiceExtensions.Lifetime
         }
     }
 }
-#pragma warning restore CA1416 // Validate platform compatibility - constructor handles that

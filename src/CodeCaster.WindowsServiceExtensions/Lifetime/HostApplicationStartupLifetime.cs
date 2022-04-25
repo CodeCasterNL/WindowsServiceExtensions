@@ -72,6 +72,19 @@ namespace CodeCaster.WindowsServiceExtensions.Lifetime
         }
 
         /// <summary>
+        /// Do not call ServiceBase.Stop() on error.
+        /// </summary>
+        public new Task StopAsync(CancellationToken cancellationToken)
+        {
+            if (!OperatingSystem.IsWindows() || !WindowsServiceHelpers.IsWindowsService() || ExitCode == 0)
+            {
+                base.StopAsync(cancellationToken);
+            }
+            
+            return Task.CompletedTask;
+        }
+
+        /// <summary>
         /// Override to execute startup code, no need to call base. Async because who knows.
         /// </summary>
         /// <returns></returns>
