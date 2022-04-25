@@ -47,15 +47,9 @@ public class MyCoolBackgroundService : BackgroundService
 }
 ```
 
-As long as your `ExecuteAsync()` runs, you have one or more _.NET_ (not Widows!) background services (`IHostedService`) running inside your executable hosting the .NET application. When the service start request immediately throws an exception (from dependency injection errors to immediate errors in `ExecuteAsync()`), that will stop the .NET Host that runs your application, and an event will be logged (as long as it exists and/or permisions are adequate).
+As long as your `ExecuteAsync()` runs, you have one or more .NET background services running as `IHostedService` inside your executable hosting the .NET application, whose lifetime tells the Service Control Manager that it is in fact a Windows Service. When the service start request immediately throws an exception (from dependency injection errors to immediate errors in `ExecuteAsync()`), that will stop the .NET Host that runs your application, and an event will be logged (as long as its source exists and/or permisions are adequate).
 
 ## Exception handling
-This library used to contain exception handling code in a base service, which is no longer needed for .NET Platform Extensions 6, see [Docs / .NET / .NET fundamentals / Breaking changes / Unhandled exceptions from a BackgroundService](https://docs.microsoft.com/en-us/dotnet/core/compatibility/core-libraries/6.0/hosting-exception-handling):
-
-> In previous versions, when a BackgroundService throws an unhandled exception, the exception is lost and the service appears unresponsive. .NET 6 fixes this behavior by logging the exception and stopping the host.
-
-With the [retirement of .NET 5 on May 8, 2022](https://docs.microsoft.com/en-us/lifecycle/products/microsoft-net-and-net-core), this WindowsServiceExtensions library targets .NET (Platform Extensions) 6 going forward from v3.0.0.
-
 However, in the case of a background service excption, the service doesn't report an error to the Service Control Manager, who will think the process exited nicely. So these are the scenarios:
 
 * You set `ServiceBase.ExitCode` to 0 and call `ServiceBase.Stop()`: no events will be logged, your service's recovery actions won't run.
@@ -63,6 +57,12 @@ However, in the case of a background service excption, the service doesn't repor
 * You set `ServiceBase.ExitCode` to > 0 and _don't_ call `ServiceBase.Stop()` but just exit the application: events 7031 ("service terminated unexpectedly.  It has done this N time(s).  The following corrective action will be taken") will be logged, your service's recovery actions will be executed.
 
 I prefer the latter, so that's what this library does.
+
+This library used to contain exception handling code in a base service, which is no longer needed for .NET Platform Extensions 6, see [Docs / .NET / .NET fundamentals / Breaking changes / Unhandled exceptions from a BackgroundService](https://docs.microsoft.com/en-us/dotnet/core/compatibility/core-libraries/6.0/hosting-exception-handling):
+
+> In previous versions, when a BackgroundService throws an unhandled exception, the exception is lost and the service appears unresponsive. .NET 6 fixes this behavior by logging the exception and stopping the host.
+
+With the [retirement of .NET 5 on May 8, 2022](https://docs.microsoft.com/en-us/lifecycle/products/microsoft-net-and-net-core), this WindowsServiceExtensions library targets .NET (Platform Extensions) 6 going forward from v3.0.0, and it lets the WindowsServiceLifetime base class log the exception and terminate the host application.
 
 ## Host Builder (dependency injection)
 To receive session or power events, call `UseWindowsServiceExtensions()` on your Host Builder:
