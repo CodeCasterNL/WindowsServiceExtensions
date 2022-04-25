@@ -63,7 +63,7 @@ namespace CodeCaster.WindowsServiceExtensions.Service
 
                 await TryExecuteAsync(stoppingToken);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (!stoppingToken.IsCancellationRequested)
             {
                 Logger.LogInformation(ex, "Unhandled exception in {serviceType}, setting process exit code to {exitCode}:", GetType().FullName, ErrorInvalidData);
 
