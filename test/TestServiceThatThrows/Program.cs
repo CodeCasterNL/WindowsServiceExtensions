@@ -25,7 +25,7 @@ namespace TestServiceThatThrows
                 Debugger.Break();
             }
 
-            SecondsToWaitBeforeThrowing = Debugger.IsAttached ? 1 : 31;
+            SecondsToWaitBeforeThrowing = Debugger.IsAttached ? 1 : 5;
 
             await new HostBuilder()
                 .ConfigureLogging(l => l.AddConsole())

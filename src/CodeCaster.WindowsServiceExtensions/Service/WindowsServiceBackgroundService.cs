@@ -63,25 +63,23 @@ namespace CodeCaster.WindowsServiceExtensions.Service
 
                 await TryExecuteAsync(stoppingToken);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                Logger.LogInformation("Exception occurred, setting process exit code to {exitCode}", ErrorInvalidData);
+                Logger.LogInformation(ex, "Unhandled exception in {serviceType}, setting process exit code to {exitCode}:", GetType().FullName, ErrorInvalidData);
 
                 // The .NET host will shut down with code 0 if we don't do this.
                 Environment.ExitCode = ErrorInvalidData;
 
-#pragma warning disable CA1416 // Validate platform compatibility - we are a Windows Service.
                 if (ServiceLifetime != null)
                 {
                     Logger.LogDebug("Setting service exit code to {exitCode}", ErrorInvalidData);
 
                     // To report to the Service Control Manager on failure, is uint so > 0.
-                    ServiceLifetime.ExitCode = ErrorInvalidData + 1;
+                    // Do _not_ call ServiceBase.Stop() after this, or it'll think we exited successfully.
+                    ServiceLifetime.ExitCode = ErrorInvalidData;
                 }
-#pragma warning restore CA1416 // Validate platform compatibility
 
                 // Let the BackgroundService handle and log the exception.
-                // Do _not_ call ServiceBase.Stop(), or it'll think we exited successfully.
                 throw;
             }
         }

@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Reflection;
+using System.ServiceProcess;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
@@ -76,12 +78,48 @@ namespace CodeCaster.WindowsServiceExtensions.Lifetime
         /// </summary>
         public new Task StopAsync(CancellationToken cancellationToken)
         {
-            if (!OperatingSystem.IsWindows() || !WindowsServiceHelpers.IsWindowsService() || ExitCode == 0)
+            if (ExitCode == 0)
             {
                 base.StopAsync(cancellationToken);
             }
-            
+
             return Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// Sets the exit code and reports that back to the Service Control Manager.
+        ///
+        /// <see cref="ServiceBase.ExitCode"/> only gets flushed on Stop(), which we don't want to call on error.
+        /// </summary>
+        public new int ExitCode
+        {
+            get => base.ExitCode;
+            set
+            {
+                if (value < 0)
+                {
+                    throw new ArgumentException("ExitCode must be 0 or greater");
+                }
+
+                base.ExitCode = value;
+
+                var privateStatus = typeof(ServiceBase).GetField("_status", BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(this)!;
+
+                var finalStatus = new Interop.Advapi32.ServiceStatus
+                {
+                    win32ExitCode = value,
+                    //serviceSpecificExitCode = serviceSpecificExitCode,
+
+                    // Copy the properties from ServiceBase._status into a struct that we know.
+                    serviceType = GetStatusField(privateStatus, "serviceType"),
+                    checkPoint = GetStatusField(privateStatus, "checkPoint"),
+                    controlsAccepted = GetStatusField(privateStatus, "controlsAccepted"),
+                    waitHint = GetStatusField(privateStatus, "waitHint"),
+                    currentState = GetStatusField(privateStatus, "currentState"),
+                };
+
+                Interop.Advapi32.SetServiceStatus(ServiceHandle, ref finalStatus);
+            }
         }
 
         /// <summary>
@@ -117,6 +155,12 @@ namespace CodeCaster.WindowsServiceExtensions.Lifetime
             }
 
             base.OnStart(args);
+        }
+
+        private int GetStatusField(object privateStatus, string fieldName)
+        {
+            var field = privateStatus.GetType().GetField(fieldName);
+            return (int)field!.GetValue(privateStatus)!;
         }
 
         /// <inheritdoc />

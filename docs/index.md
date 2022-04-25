@@ -56,7 +56,13 @@ This library used to contain exception handling code in a base service, which is
 
 With the [retirement of .NET 5 on May 8, 2022](https://docs.microsoft.com/en-us/lifecycle/products/microsoft-net-and-net-core), this WindowsServiceExtensions library targets .NET (Platform Extensions) 6 going forward from v3.0.0.
 
-However, in the case of a background service excption, the service doesn't report an error to the Service Control Manager, who will think the process exited nicely. This library fixes that.
+However, in the case of a background service excption, the service doesn't report an error to the Service Control Manager, who will think the process exited nicely. So these are the scenarios:
+
+* You set `ServiceBase.ExitCode` to 0 and call `ServiceBase.Stop()`: no events will be logged, your service's recovery actions won't run.
+* You set `ServiceBase.ExitCode` to > 0 and call `ServiceBase.Stop()`: events 7023 ("service terminated with the following error") and 7034 (" service terminated unexpectedly") will be logged, your service's recovery actions won't run.
+* You set `ServiceBase.ExitCode` to > 0 and _don't_ call `ServiceBase.Stop()` but just exit the application: events 7031 ("service terminated unexpectedly.  It has done this N time(s).  The following corrective action will be taken") will be logged, your service's recovery actions will be executed.
+
+I prefer the latter, so that's what this library does.
 
 ## Host Builder (dependency injection)
 To receive session or power events, call `UseWindowsServiceExtensions()` on your Host Builder:
