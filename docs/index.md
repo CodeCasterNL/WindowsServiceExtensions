@@ -90,7 +90,7 @@ If you let your service inherit `CodeCaster.WindowsServiceExtensions.Service.Win
 public class MyCoolBackgroundService : WindowsServiceBackgroundService
 {
     public MyCoolBackgroundService(
-        ILogger<MyFaultyWindowsServiceBackgroundService> logger,
+        ILogger<MyCoolBackgroundService> logger,
         IHostLifetime hostLifetime
     )
         : base(logger, hostLifetime)
@@ -103,12 +103,8 @@ public class MyCoolBackgroundService : WindowsServiceBackgroundService
         // Do your continuous or periodic background work.
         await SomeLongRunningTaskAsync();
 
-        // We're done, let the service stop.
-        ServiceLifetime.ExitCode = 0;
-
-        // This kills the process about immediately, you can also inject `IHostApplication` 
-        // and call StopAsync() on that.
-        await ServiceLifetime.StopAsync();
+        // This will report to the SCM that your service failed.
+        throw new Exception("Foo");
     }
 
     // This one tells you when we're shutting down or resuming from semi-hibernation

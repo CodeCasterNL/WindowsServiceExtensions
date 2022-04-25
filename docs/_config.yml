@@ -1,5 +1,5 @@
 theme: "jekyll-theme-cayman"
-description: "CodeCaster.WindowsServices documentation"
+description: "CodeCaster.WindowsServiceExtensions documentation"
 url: "https://codecasternl.github.io/WindowsServiceExtensions/"
 defaults:
   -
