@@ -17,6 +17,17 @@ The following improvements are included in this library:
 Through [NuGet](https://www.nuget.org/packages/CodeCaster.WindowsServiceExtensions/):
 
     > Install-Package CodeCaster.WindowsServiceExtensions
+
+## Usage
+These methods from this package allow your `IHostedService`s to tell the Windows Service Control Manager about errors, and respond to Windows Service events relating to sessions (user logon/logoff) and power state (shutdown/hibernate/resume):
+
+* On your Host Builder, call `UseWindowsServiceExtensions()` instead of `UseWindowsService()`.
+* Instead of letting your service inherit `BackgroundService`, inherit from `CodeCaster.WindowsServiceExtensions.WindowsServiceBackgroundService`.
+* Implement `protected Task TryExecuteAsync(CancellationToken stoppingToken)` instead of `ExecuteAsync(CancellationToken stoppingToken)`.
+* Implement the method `public override bool OnPowerEvent(PowerBroadcastStatus powerStatus) { ... }` and do your thing when it's called with a certain status.
+* Implement the method `public override bool OnSessionChange(SessionChangeDescription changeDescription) { ... }` and do your thing when it's called with a certain status.
+
+Do note that the statuses received can vary. You get either `ResumeSuspend`, `ResumeAutomatic` or both reported to `OnPowerEvent()`, never neither, after a machine wake, reboot or boot.
     
 ## Documentation
 For examples and more specific documentation, see https://codecasternl.github.io/WindowsServiceExtensions/.
@@ -31,16 +42,6 @@ Changes:
 * Instead of `BackgroundService.ExecuteAsync()`, which is now sealed, override `WindowsServiceBackgroundService.TryExecuteAsync()` to do your long-running work.
 
 Extended upgrading docs: see https://codecasternl.github.io/WindowsServiceExtensions/upgrading-v2-v3.
-
-## Usage
-These methods from this package allow your `IHostedService`s to respond to Windows Service events relating to sessions (user logon/logoff) and power state (shutdown/hibernate/resume):
-
-* On your Host Builder, call `UseWindowsServiceExtensions()` instead of `UseWindowsService()`.
-* Instead of letting your service inherit `BackgroundService`, inherit from `CodeCaster.WindowsServiceExtensions.WindowsServiceBackgroundService`.
-* Implement the method `public override bool OnPowerEvent(PowerBroadcastStatus powerStatus) { ... }` and do your thing when it's called with a certain status.
-* Implement the method `public override bool OnSessionChange(SessionChangeDescription changeDescription) { ... }` and do your thing when it's called with a certain status.
-
-Do note that the statuses received can vary. You get either `ResumeSuspend`, `ResumeAutomatic` or both reported to `OnPowerEvent()`, never neither, after a machine wake, reboot or boot.
 
 # Contributing
 Please file an issue or PR. Even if you use this and are happy with it.

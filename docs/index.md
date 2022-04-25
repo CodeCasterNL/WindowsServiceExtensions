@@ -16,7 +16,7 @@ Through [NuGet](https://www.nuget.org/packages/CodeCaster.WindowsServiceExtensio
     > Install-Package CodeCaster.WindowsServiceExtensions
 
 ## Why should you use this?
-Using .NET's [`UseWindowsService()`](https://docs.microsoft.com/en-us/dotnet/api/microsoft.extensions.hosting.windowsservicelifetimehostbuilderextensions.usewindowsservice?view=dotnet-plat-ext-6.0) (from the Platform Extensions package `Microsoft.Extensions.Hosting.WindowsServices`) and [`Microsoft.Extensions.Hosting.BackgroundService`](https://docs.microsoft.com/en-us/dotnet/api/microsoft.extensions.hosting.backgroundservice?view=dotnet-plat-ext-6.0) from `Microsoft.Extensions.Hosting.Abstractions`, a usual Windows Service program hosting some long-running background tasks could look like this:
+Using .NET's [`UseWindowsService()`](https://docs.microsoft.com/en-us/dotnet/api/microsoft.extensions.hosting.windowsservicelifetimehostbuilderextensions.usewindowsservice?view=dotnet-plat-ext-6.0) (from the Platform Extensions package `Microsoft.Extensions.Hosting.WindowsServices`) and [`Microsoft.Extensions.Hosting.BackgroundService`](https://docs.microsoft.com/en-us/dotnet/api/microsoft.extensions.hosting.backgroundservice?view=dotnet-plat-ext-6.0) from `Microsoft.Extensions.Hosting.Abstractions`, a typical Windows Service program hosting some long-running background tasks could look like this:
 
 ```csharp
 var hostBuilder = new HostBuilder()
@@ -112,7 +112,7 @@ public class MyCoolBackgroundService : WindowsServiceBackgroundService
     }
 
     // This one tells you when we're shutting down or resuming from semi-hibernation
-    protected override void OnPowerEvent(PowerBroadcastStatus powerStatus)
+    public override void OnPowerEvent(PowerBroadcastStatus powerStatus)
     {
         // The lifetime will log "OnPowerEvent: {powerStatus}"
 
@@ -130,7 +130,7 @@ public class MyCoolBackgroundService : WindowsServiceBackgroundService
     }
 
     // React to logon/logoff/...
-    protected override void OnSessionChange(SessionChangeDescription changeDescription)
+    public override void OnSessionChange(SessionChangeDescription changeDescription)
     {
         // The lifetime will log "OnSessionChange: {changeDescription.SessionId}, {changeDescription.Reason}"
 
