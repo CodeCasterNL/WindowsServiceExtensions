@@ -29,7 +29,7 @@ var hostBuilder = new HostBuilder()
     })
     .UseWindowsService();
 
-var host = hostBuilder.Build;
+var host = hostBuilder.Build();
 
 await host.RunAsync();
 ```
@@ -54,7 +54,7 @@ However, in the case of a background service excption, the service doesn't repor
 
 * You set `ServiceBase.ExitCode` to 0 and call `ServiceBase.Stop()`: no events will be logged, your service's recovery actions won't run.
 * You set `ServiceBase.ExitCode` to > 0 and call `ServiceBase.Stop()`: events 7023 ("service terminated with the following error") and 7034 (" service terminated unexpectedly") will be logged, your service's recovery actions won't run.
-* You set `ServiceBase.ExitCode` to > 0 and _don't_ call `ServiceBase.Stop()` but just exit the application: events 7031 ("service terminated unexpectedly.  It has done this N time(s).  The following corrective action will be taken") will be logged, your service's recovery actions will be executed.
+* You set `ServiceBase.ExitCode` to > 0 and _don't_ call `ServiceBase.Stop()` but just exit the application: event 7031 ("service terminated unexpectedly.  It has done this N time(s).  The following corrective action will be taken") will be logged, your service's recovery actions will be executed.
 
 I prefer the latter, so that's what this library does.
 
