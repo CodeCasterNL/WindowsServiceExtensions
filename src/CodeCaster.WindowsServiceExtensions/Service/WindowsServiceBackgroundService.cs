@@ -63,9 +63,10 @@ namespace CodeCaster.WindowsServiceExtensions.Service
 
                 await TryExecuteAsync(stoppingToken);
             }
-            catch (Exception ex) when (!stoppingToken.IsCancellationRequested)
+            catch (Exception) when (!stoppingToken.IsCancellationRequested)
             {
-                Logger.LogInformation(ex, "Unhandled exception in {serviceType}, setting process exit code to {exitCode}:", GetType().FullName, ErrorInvalidData);
+                // .NET's lifetime will log the exception (twice), log that we're here.
+                Logger.LogDebug("Unhandled exception in {serviceType}, setting process exit code to {exitCode}", GetType().FullName, ErrorInvalidData);
 
                 // The .NET host will shut down with code 0 if we don't do this.
                 Environment.ExitCode = ErrorInvalidData;
@@ -74,12 +75,12 @@ namespace CodeCaster.WindowsServiceExtensions.Service
                 {
                     Logger.LogDebug("Setting service exit code to {exitCode}", ErrorInvalidData);
 
-                    // To report to the Service Control Manager on failure, is uint so > 0.
-                    // Do _not_ call ServiceBase.Stop() after this, or it'll think we exited successfully.
+                    // To report to the Windows Service Control Manager on failure (uint so > 0).
+                    // Do _not_ call ServiceBase.Stop() after this, or it'll think we exited successfully and won't enter recovery.
                     ServiceLifetime.ExitCode = ErrorInvalidData;
                 }
 
-                // Let the BackgroundService handle and log the exception.
+                // Let .NET's lifetime handle and log the exception.
                 throw;
             }
         }

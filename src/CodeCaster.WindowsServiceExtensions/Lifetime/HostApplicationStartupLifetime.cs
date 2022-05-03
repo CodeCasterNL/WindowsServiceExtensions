@@ -78,6 +78,8 @@ namespace CodeCaster.WindowsServiceExtensions.Lifetime
         /// </summary>
         public new Task StopAsync(CancellationToken cancellationToken)
         {
+            Logger.LogDebug("StopAsync() was called, exit code {exitCode}", ExitCode);
+
             if (ExitCode == 0)
             {
                 base.StopAsync(cancellationToken);
@@ -101,14 +103,36 @@ namespace CodeCaster.WindowsServiceExtensions.Lifetime
                     throw new ArgumentException("ExitCode must be 0 or greater");
                 }
 
+                Logger.LogDebug("Setting ExitCode to {exitCode}", value);
+
                 base.ExitCode = value;
 
-                var privateStatus = typeof(ServiceBase).GetField("_status", BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(this)!;
+                /* So here's the thing: we cannot let StopAsync() be called when we're stopping due to an exception, because that will report the error _and_ stop the service.
+                 * When a dying service calls StopAsync(), the service does not enter recovery and stays down after logging an error.
+                 *
+                 * So on exception, we want to set the exit code and prevent calling Stop(). This works, but now you can't set an exit code _and_ exit successfully.
+                 *
+                 * But ServiceBase only calls SetServiceStatus() on Stop() and Start() calls... so we need to do that ourselves. We have to use their exact parameters, and the
+                 * P/Invoke libs () are all internal, so time for some reflection magic to copy the _status out of our ServiceBase to an own struct and call our own SetServiceStatus
+                 * using the copied status field. Seems brittle, but probably as stable as the advapi32.
+                 */
+
+                const string statusFieldName = "_status";
+
+                var privateStatus = typeof(ServiceBase).GetField(statusFieldName, BindingFlags.NonPublic | BindingFlags.Instance)?.GetValue(this);
+
+                if (privateStatus == null)
+                {
+                    throw new InvalidOperationException($"Expecting a private field {nameof(ServiceBase)}.{statusFieldName}, did .NET do a breaking change?");
+                }
 
                 var finalStatus = new Interop.Advapi32.ServiceStatus
                 {
                     win32ExitCode = value,
-                    //serviceSpecificExitCode = serviceSpecificExitCode,
+
+                    // Event Log interprets this as Win32 code anyway (when win32ExitCode = 0x0000042A, ERROR_SERVICE_SPECIFIC_ERROR)
+                    //serviceSpecificExitCode = 42,
+                    //https://social.msdn.microsoft.com/Forums/azure/en-US/6e675b34-82e8-4f89-b4b9-2f4ea31aa751/intended-use-of-dwservicespecificexitcode-event-viewer-treats-it-as-a-win32-error-code?forum=windowsgeneraldevelopmentissues
 
                     // Copy the properties from ServiceBase._status into a struct that we know.
                     serviceType = GetStatusField(privateStatus, "serviceType"),
@@ -119,6 +143,8 @@ namespace CodeCaster.WindowsServiceExtensions.Lifetime
                 };
 
                 Interop.Advapi32.SetServiceStatus(ServiceHandle, ref finalStatus);
+
+                // Again, now that we've set the error status, when we don't call Stop(), this will be treated as an error and recovery will start. When you call Stop(), it will stay down.
             }
         }
 
