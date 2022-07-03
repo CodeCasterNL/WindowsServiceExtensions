@@ -2,8 +2,8 @@ name: Delete Old Workflow Runs
 
 on:
   schedule:
-    # Run daily at 08:00
-    - cron: '0 8 * * *'
+    # Run every 25th of the month at 08:00
+    - cron: '0 8 25 * *'
   workflow_dispatch:
     inputs:
       retain_days:
@@ -28,7 +28,7 @@ jobs:
           echo "RETAIN_DAYS=${{ github.event.inputs.retain_days || env.DEFAULT_RETAIN_DAYS }}" >> $GITHUB_ENV
           echo "RETAIN_RUNS=${{ github.event.inputs.retain_runs || env.DEFAULT_RETAIN_RUNS }}" >> $GITHUB_ENV
       - name: Delete workflow runs older than ${{ env.RETAIN_DAYS }} days, keeping ${{ env.RETAIN_RUNS }} runs
-        uses: Mattraks/delete-workflow-runs@v1.2.3
+        uses: Mattraks/delete-workflow-runs@v2.0.2
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           repository: ${{ github.repository }}
